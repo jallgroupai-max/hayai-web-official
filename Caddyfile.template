@@ -1,0 +1,76 @@
+# Override del Caddyfile por defecto de Railpack (core/providers/staticfile/Caddyfile.template).
+# Railpack lo detecta por nombre y lo renderiza como plantilla Go, por eso se conservan
+# {{.StaticFileRoot}} y {{if .IndexFallback}}.
+# 
+# Unico cambio real respecto al original: la cabecera Content-Security-Policy.
+# El CSP por defecto rompe el sitio de dos formas:
+# 
+#   1. Sin 'unsafe-eval' se bloquea el `new Function(...)` de support.js:848, que es
+#      como el dc-runtime compila la logica de los componentes <x-dc>. La home carga
+#      pero se queda en blanco. @babel/standalone tambien necesita eval.
+# 
+#   2. Sin `blob:` se rompen los bundles de projects/*.html: montan cada pagina como
+#      iframe con src=blob: y sustituyen sus assets por URLs blob: (ver el unpacker,
+#      mountPage() y el bucle de blobUrls). El comodin `*` de CSP no cubre los esquemas
+#      blob: ni data:, hay que listarlos explicitamente.
+# 
+# Nota: este CSP es permisivo, pero el de Railpack ya lo era: 'unsafe-inline' + `https: *`
+# en script-src permite cargar cualquier script de cualquier origen https. La proteccion
+# real que queda aqui es object-src 'none' y el resto de cabeceras de seguridad.
+{
+	admin off
+	persist_config off
+	auto_https off
+
+	log {
+		format json
+	}
+
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+:{$PORT:80} {
+	log {
+		format json
+	}
+
+	respond /health 200
+
+	# Security headers
+	header {
+		# Enable cross-site filter (XSS) and tell browsers to block detected attacks
+		X-XSS-Protection "1; mode=block"
+		# Prevent some browsers from MIME-sniffing a response away from the declared Content-Type
+		X-Content-Type-Options "nosniff"
+		# Keep referrer data off of HTTP connections
+		Referrer-Policy "strict-origin-when-cross-origin"
+		# CSP ajustado para el dc-runtime (eval) y los bundles autoextraibles (blob:)
+		Content-Security-Policy "default-src 'self' data: blob:; img-src 'self' data: blob: https: *; style-src 'self' 'unsafe-inline' data: blob: https: *; script-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https: *; font-src 'self' data: blob: https: *; connect-src 'self' data: blob: https: *; media-src 'self' data: blob: https: *; object-src 'none'; frame-src 'self' data: blob: https: *; child-src 'self' data: blob: https: *; worker-src 'self' blob:;"
+		# Remove Server header
+		-Server
+	}
+
+	root * {{.StaticFileRoot}}
+
+	# Handle static files
+	file_server {
+		hide .git
+		hide .env*
+	}
+
+	# Compression with more formats
+	encode {
+		gzip
+		zstd
+	}
+
+	# Try files with HTML extension{{if .IndexFallback}} and handle SPA routing{{end}}
+	try_files {path} {path}.html {path}/index.html{{if .IndexFallback}} /index.html{{end}}
+
+	handle_errors {
+		rewrite * /{err.status_code}.html
+		file_server
+	}
+}
