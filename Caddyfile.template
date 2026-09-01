@@ -1,6 +1,10 @@
 # Override del Caddyfile por defecto de Railpack (core/providers/staticfile/Caddyfile.template).
 # Railpack lo detecta por nombre y lo renderiza como plantilla Go, por eso se conservan
-# {{.StaticFileRoot}} y {{if .IndexFallback}}.
+# las variables StaticFileRoot / IndexFallback en el cuerpo (abajo).
+#
+# OJO: no escribir sintaxis de plantilla Go en estos comentarios. text/template procesa
+# el fichero entero como texto y no reconoce "#" como comentario, asi que una accion
+# suelta aqui rompe el parseo del build con "unexpected EOF".
 # 
 # Unico cambio real respecto al original: la cabecera Content-Security-Policy.
 # El CSP por defecto rompe el sitio de dos formas:
