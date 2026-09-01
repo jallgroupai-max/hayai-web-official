@@ -1,0 +1,2 @@
+# Los archivos vendorizados llevan hash SRI: no tocar sus finales de linea.
+vendor/** -text
