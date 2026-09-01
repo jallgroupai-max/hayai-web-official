@@ -1,0 +1,918 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAYAI — Vitrina de Marca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Noto+Serif+JP:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   HAYAI · Vitrina de marca
+   Sistema de tokens — tres capas: primitivo, semántico, componente.
+   Ningún valor literal en el marcado.
+   ============================================================ */
+:root{
+  /* --- primitivos: ámbar (miel del tejón / crepúsculo) H=70 --- */
+  --amber-100:#FFEDD9; --amber-300:#FFC98B; --amber-500:#EF9D25;
+  --amber-700:#AB7225; --amber-900:#6D4610;
+  /* --- primitivos: noche (neutros oscuros teñidos de cálido) --- */
+  --noche-0:#16110B; --noche-1:#1D1711; --noche-2:#251F18; --noche-3:#302921;
+  /* --- primitivos: cal (neutros claros teñidos de cálido) --- */
+  --cal-1:#FBF8F4; --cal-2:#F5F1EC; --cal-3:#ECE7E2; --cal-6:#D5D0CA;
+  --cal-9:#8B857F; --cal-11:#69625B; --cal-12:#241E17;
+  /* --- primitivos: represa (azul de apoyo, croma baja) H=215 --- */
+  --represa-300:#85ACB6; --represa-500:#3D727F; --represa-700:#245560; --represa-900:#12333A;
+  /* --- semánticos --- */
+  --verde:#69AA77; --rojo:#B6322B;
+  --noche-tenue:#7C7368;   /* rótulos terciarios sobre oscuro · 4,4:1 */
+
+  /* --- tipografía --- */
+  --f-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --f-texto:'IBM Plex Sans','Helvetica Neue',Arial,sans-serif;
+  --f-mono:'IBM Plex Mono','SFMono-Regular',Consolas,monospace;
+  --f-jp:'Noto Serif JP',serif;
+  /* escala base 17 · ratio 1.25 */
+  --t--2:11px; --t--1:14px; --t-0:17px; --t-1:21px; --t-2:27px;
+  --t-3:34px; --t-4:42px; --t-5:53px; --t-6:66px; --t-7:88px;
+  /* interlínea por rol */
+  --lh-display:1.05; --lh-titular:1.15; --lh-sub:1.30; --lh-cuerpo:1.55; --lh-ui:1.25;
+
+  /* --- espacio: escala no lineal --- */
+  --s-1:2px; --s-2:4px; --s-3:8px; --s-4:12px; --s-5:16px; --s-6:24px;
+  --s-7:32px; --s-8:48px; --s-9:64px; --s-10:96px; --s-11:128px;
+
+  /* --- token de firma --- */
+  --banda:4px;
+  --ease-hayai:cubic-bezier(0.2,0,0,1);
+
+  /* --- página --- */
+  --pw:210mm; --ph:297mm; --pad:18mm;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--f-texto); font-size:var(--t-0); line-height:var(--lh-cuerpo);
+  color:var(--cal-12); background:var(--cal-3);
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+::selection{background:var(--amber-500);color:var(--noche-0)}
+
+/* ---------- barra de ayuda (no se imprime) ---------- */
+.barra{
+  position:relative; z-index:9; background:var(--noche-0); color:var(--cal-6);
+  font-size:var(--t--2); letter-spacing:.10em; text-transform:uppercase;
+  padding:var(--s-4) var(--s-6); display:flex; gap:var(--s-6); flex-wrap:wrap;
+  justify-content:space-between; align-items:center; border-bottom:1px solid var(--noche-3);
+}
+.barra strong{color:var(--amber-500);font-weight:600}
+.barra span{font-family:var(--f-mono);text-transform:none;letter-spacing:0;font-size:var(--t--2)}
+
+/* ---------- página ---------- */
+.hojas{padding:var(--s-8) var(--s-5) var(--s-10);display:flex;flex-direction:column;align-items:center;gap:var(--s-8)}
+.page{
+  width:var(--pw); min-height:var(--ph); padding:var(--pad);
+  background:var(--cal-1); color:var(--cal-12);
+  position:relative; overflow:hidden; display:flex; flex-direction:column;
+}
+.page--noche{background:var(--noche-0);color:var(--cal-1)}
+.page--noche .rule{border-color:var(--noche-3)}
+.page--noche .muted{color:var(--cal-9)}
+.page--noche .kicker{color:var(--amber-500)}
+.page--cal2{background:var(--cal-2)}
+
+/* folio */
+.folio{
+  position:absolute; left:var(--pad); right:var(--pad); bottom:calc(var(--pad) - 6mm);
+  display:flex; justify-content:space-between; align-items:baseline;
+  font-family:var(--f-mono); font-size:var(--t--2); color:var(--cal-9);
+  letter-spacing:.04em;
+}
+.page--noche .folio{color:var(--noche-tenue)}
+.page--noche .folio b{color:var(--amber-700)}
+.folio b{font-weight:500;color:var(--cal-11);font-variant-numeric:tabular-nums}
+
+/* ---------- retícula ---------- */
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--s-5) var(--s-5)}
+.grid--slots{align-items:start}
+.c-3{grid-column:span 3}.c-4{grid-column:span 4}.c-5{grid-column:span 5}
+.c-6{grid-column:span 6}.c-7{grid-column:span 7}.c-8{grid-column:span 8}
+.c-9{grid-column:span 9}.c-12{grid-column:span 12}
+.start-2{grid-column-start:2}.start-6{grid-column-start:6}.start-7{grid-column-start:7}
+
+/* ---------- tipografía de página ---------- */
+.banda{width:64px;height:var(--banda);background:var(--amber-500);margin-bottom:var(--s-5)}
+.kicker{
+  font-family:var(--f-mono); font-size:var(--t--2); letter-spacing:.14em;
+  text-transform:uppercase; color:var(--amber-700); margin-bottom:var(--s-3);
+}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:600;text-wrap:balance}
+.nb{text-wrap:initial}
+h1{font-size:var(--t-6);line-height:var(--lh-display);letter-spacing:-.035em;font-variation-settings:'SOFT' 30,'WONK' 1}
+h2{font-size:var(--t-4);line-height:var(--lh-titular);letter-spacing:-.03em;font-variation-settings:'SOFT' 20,'WONK' 1}
+h3{font-size:var(--t-2);line-height:var(--lh-sub);letter-spacing:-.015em}
+h4{font-size:var(--t-1);line-height:var(--lh-sub);letter-spacing:-.01em}
+p{max-inline-size:66ch}
+.lede{font-size:var(--t-1);line-height:1.45;max-inline-size:52ch;color:var(--cal-11)}
+.page--noche .lede{color:var(--cal-6)}
+.muted{color:var(--cal-11)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.sm{font-size:var(--t--1);line-height:1.45}
+.xs{font-size:var(--t--2);line-height:1.4;letter-spacing:.01em}
+.amber{color:var(--amber-700)}
+.page--noche .amber{color:var(--amber-500)}
+.rule{border:0;border-top:1px solid var(--cal-6)}
+.stack>*+*{margin-top:var(--s-5)}
+.stack-sm>*+*{margin-top:var(--s-3)}
+.mt-6{margin-top:var(--s-6)}.mt-7{margin-top:var(--s-7)}.mt-8{margin-top:var(--s-8)}
+.grow{flex:1}
+
+/* ---------- componentes ---------- */
+.dato{display:flex;flex-direction:column;gap:var(--s-1)}
+.dato dt{font-family:var(--f-mono);font-size:var(--t--2);letter-spacing:.10em;text-transform:uppercase;color:var(--cal-9)}
+.dato dd{font-size:var(--t-0)}
+
+.lista-def{display:grid;grid-template-columns:auto 1fr;gap:var(--s-3) var(--s-6);align-items:baseline}
+.lista-def dt{font-family:var(--f-mono);font-size:var(--t--2);letter-spacing:.10em;text-transform:uppercase;color:var(--cal-9);white-space:nowrap}
+.page--noche .lista-def dt{color:var(--noche-tenue)}
+.lista-def dd{font-size:var(--t-0);line-height:1.4}
+
+.par{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--cal-6)}
+.par>div{padding:var(--s-4) 0;border-bottom:1px solid var(--cal-6)}
+.par>div:nth-child(odd){padding-right:var(--s-6)}
+.par>div:nth-child(even){padding-left:var(--s-6);border-left:1px solid var(--cal-6)}
+.par .si{color:var(--cal-12)}
+.par .no{color:var(--cal-9);text-decoration:line-through;text-decoration-color:var(--cal-6)}
+
+.barra-mezcla{display:flex;height:10px;width:100%;margin:var(--s-5) 0 var(--s-3)}
+.barra-mezcla i{display:block;height:100%}
+
+.cita{
+  font-family:var(--f-display);font-size:var(--t-3);line-height:1.2;letter-spacing:-.025em;
+  font-weight:600;font-variation-settings:'SOFT' 20,'WONK' 1;max-inline-size:20ch;
+}
+
+/* muestras de color */
+.swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--s-3)}
+.sw{display:flex;flex-direction:column}
+.sw i{display:block;height:74px;border:1px solid rgba(0,0,0,.10)}
+.sw b{font-family:var(--f-mono);font-size:var(--t--2);font-weight:500;margin-top:var(--s-3);letter-spacing:.02em}
+.sw span{font-family:var(--f-mono);font-size:var(--t--2);color:var(--cal-9);letter-spacing:.02em}
+.page--noche .sw i{border-color:rgba(255,255,255,.12)}
+.page--noche .sw span{color:var(--noche-tenue)}
+
+/* ranura para imágenes de Leonardo */
+.slot{
+  border:1px dashed var(--cal-6); background:
+    repeating-linear-gradient(45deg,transparent,transparent 9px,rgba(0,0,0,.018) 9px,rgba(0,0,0,.018) 18px);
+  display:flex;flex-direction:column;justify-content:flex-end;
+  padding:var(--s-4); min-height:120px; position:relative;
+}
+.page--noche .slot{
+  border-color:var(--noche-3);
+  background:repeating-linear-gradient(45deg,transparent,transparent 9px,rgba(255,255,255,.022) 9px,rgba(255,255,255,.022) 18px);
+}
+.slot::before{
+  content:attr(data-n); position:absolute; top:var(--s-4); left:var(--s-4);
+  font-family:var(--f-mono); font-size:var(--t--2); font-weight:500;
+  color:var(--noche-0); background:var(--amber-500);
+  padding:2px 7px; letter-spacing:.04em;
+}
+.slot b{font-family:var(--f-mono);font-size:var(--t--2);font-weight:500;letter-spacing:.02em;display:block}
+.slot span{font-family:var(--f-mono);font-size:var(--t--2);color:var(--cal-9);display:block;letter-spacing:.02em}
+.page--noche .slot span{color:var(--noche-tenue)}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;padding:var(--s-5)}
+.slot--alto{min-height:210px}
+.slot--xl{min-height:300px}
+.slot--cuadro{aspect-ratio:1/1;min-height:0}
+.slot--retrato{aspect-ratio:4/5;min-height:0}
+.slot--ancho{aspect-ratio:16/9;min-height:0}
+
+/* etiqueta numérica */
+.num{font-family:var(--f-mono);font-size:var(--t--2);color:var(--amber-700);letter-spacing:.10em}
+.page--noche .num{color:var(--amber-500)}
+
+/* tabla ligera */
+table{width:100%;border-collapse:collapse;font-size:var(--t--1)}
+th{
+  text-align:left;font-family:var(--f-mono);font-weight:500;font-size:var(--t--2);
+  letter-spacing:.10em;text-transform:uppercase;color:var(--cal-9);
+  padding:0 var(--s-5) var(--s-3) 0;border-bottom:1px solid var(--cal-6);
+}
+td{padding:var(--s-4) var(--s-5) var(--s-4) 0;border-bottom:1px solid var(--cal-6);vertical-align:top;line-height:1.4}
+.page--noche th,.page--noche td{border-color:var(--noche-3)}
+.page--noche th{color:var(--noche-tenue)}
+td:last-child,th:last-child{padding-right:0}
+
+/* ---------- impresión ---------- */
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff}
+  .barra{display:none}
+  .hojas{padding:0;gap:0}
+  .page{
+    width:var(--pw);height:var(--ph);min-height:var(--ph);
+    break-after:page;page-break-after:always;
+    -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  }
+  .page:last-child{break-after:auto;page-break-after:auto}
+  .slot{break-inside:avoid}
+}
+@media screen and (max-width:820px){
+  .hojas{padding:var(--s-6) 0}
+  .page{transform:scale(.46);transform-origin:top center;margin-bottom:calc(-1 * var(--ph) * .54)}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div class="barra">
+  <div><strong>HAYAI</strong> · Vitrina de marca — v1 · agosto 2026</div>
+  <span>Para PDF: Imprimir → A4 · Márgenes: Ninguno · ✓ Gráficos de fondo</span>
+</div>
+
+<main class="hojas">
+
+<!-- ============ 01 · PORTADA ============ -->
+<section class="page page--noche">
+  <div class="grid" style="align-items:start">
+    <div class="c-7">
+      <div class="banda"></div>
+      <div class="kicker">Vitrina de marca · v1</div>
+    </div>
+    <div class="c-4 start-9" style="text-align:right">
+      <div class="mono xs" style="color:var(--noche-3);letter-spacing:.10em">BARQUISIMETO · VENEZUELA<br>AGOSTO 2026</div>
+    </div>
+  </div>
+
+  <div class="grow" style="display:flex;align-items:center">
+    <div class="grid" style="width:100%;align-items:center">
+      <div class="c-5">
+        <div class="slot slot--cuadro" data-n="01">
+          <b>logo-principal.svg</b>
+          <span>Isotipo + logotipo · fondo oscuro</span>
+        </div>
+      </div>
+      <div class="c-6 start-7">
+        <div style="font-family:var(--f-display);font-size:var(--t-7);line-height:.95;letter-spacing:-.045em;font-weight:700;font-variation-settings:'SOFT' 30,'WONK' 1">HAYAI</div>
+        <div class="mono" style="font-size:var(--t--1);letter-spacing:.24em;color:var(--amber-500);margin-top:var(--s-5)">A · Y Á I</div>
+        <hr class="rule mt-6">
+        <p class="lede mt-6" style="color:var(--cal-1);font-family:var(--f-display);font-size:var(--t-2);line-height:1.2;letter-spacing:-.02em">Pronto en llegar.<br>Lentos en irnos.</p>
+        <p class="sm muted mt-6" style="max-inline-size:34ch">Automatización con inteligencia artificial para negocios de Barquisimeto.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="folio"><span>Identidad de marca</span><b>01</b></div>
+</section>
+
+<!-- ============ 02 · LA MARCA EN UNA PÁGINA ============ -->
+<section class="page">
+  <div class="banda"></div>
+  <div class="kicker">Resumen</div>
+  <h2>La marca en una página</h2>
+  <p class="lede mt-6">Si de todo este documento solo se recordara una página, tendría que ser esta.</p>
+
+  <div class="grid mt-8" style="row-gap:var(--s-7)">
+    <div class="c-5">
+      <dl class="lista-def">
+        <dt>Qué es</dt><dd>Tres socios que montan sistemas de automatización para negocios pequeños, enseñan a usarlos y se quedan acompañando.</dd>
+        <dt>Para quién</dt><dd>El dueño de un comercio de ritmo tranquilo, de gustos clásicos, que quiere modernizarse y no sabe en quién confiar.</dd>
+        <dt>Contra qué</dt><dd>No contra el freelancer: contra el sistema que se instaló y nadie usa.</dd>
+        <dt>Prueba</dt><dd>Negocios reales, con nombre y zona, grabados en video.</dd>
+      </dl>
+    </div>
+    <div class="c-6 start-7">
+      <div class="cita">«Nosotros te lo montamos, te enseñamos, y nos quedamos.»</div>
+      <hr class="rule mt-6">
+      <div class="grid mt-6" style="gap:var(--s-5)">
+        <div class="c-6"><div class="dato"><dt>Arquetipo principal</dt><dd>El Hombre Corriente</dd></div></div>
+        <div class="c-6"><div class="dato"><dt>Secundario</dt><dd>El Cuidador</dd></div></div>
+        <div class="c-6"><div class="dato"><dt>Acento interno</dt><dd>El Forajido</dd></div></div>
+        <div class="c-6"><div class="dato"><dt>Mayor temor</dt><dd>Que no lo entiendan</dd></div></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+  <div class="grid mt-7">
+    <div class="c-3"><div class="num">01</div><h4 class="mt-6">Se aparece</h4><p class="sm muted mt-6">Cuando algo falla, el primero en escribir es HAYAI.</p></div>
+    <div class="c-3"><div class="num">02</div><h4 class="mt-6">Se dice que no</h4><p class="sm muted mt-6">A un cliente que no encaja, a una función que sobra.</p></div>
+    <div class="c-3"><div class="num">03</div><h4 class="mt-6">Se anota</h4><p class="sm muted mt-6">Cada instalación deja una ficha escrita.</p></div>
+    <div class="c-3"><div class="num">04</div><h4 class="mt-6">Se resta</h4><p class="sm muted mt-6">Ante la duda de agregar algo, se quita otra cosa.</p></div>
+  </div>
+
+  <div class="folio"><span>Resumen</span><b>02</b></div>
+</section>
+
+<!-- ============ 03 · EL ARQUETIPO ============ -->
+<section class="page page--noche">
+  <div class="banda"></div>
+  <div class="kicker">Carl Jung · 12 arquetipos de personalidad</div>
+  <h2>El arquetipo</h2>
+
+  <div class="grid mt-8">
+    <div class="c-7">
+      <p class="lede">La barrera real de este mercado no es el precio ni la tecnología: es el <span class="amber">efecto 9x</span>. Quien construye sobrevalora lo nuevo tres veces; quien usa sobrevalora lo suyo tres veces. Un producto dos veces mejor se percibe apenas superior.</p>
+      <p class="sm muted mt-6" style="max-inline-size:52ch">Ese nueve no se vence con argumentos técnicos, porque no es un problema técnico. El arquetipo trabaja en la capa donde sí se puede ganar: la de la confianza.</p>
+    </div>
+    <div class="c-4 start-9">
+      <div class="slot slot--alto" data-n="02">
+        <b>arquetipo-ilustracion.png</b>
+        <span>Castor + tejón · 1024×1280</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+
+  <div class="barra-mezcla">
+    <i style="background:var(--amber-500);width:60%"></i>
+    <i style="background:var(--represa-500);width:30%"></i>
+    <i style="background:var(--noche-3);width:10%"></i>
+  </div>
+  <div class="grid" style="gap:var(--s-6)">
+    <div class="c-5">
+      <div class="mono xs" style="color:var(--amber-500);letter-spacing:.10em">60 % · PRINCIPAL</div>
+      <h3 class="mt-6">El Hombre Corriente</h3>
+      <p class="sm muted mt-6">Sin ostentación, conecta por empatía. Su mayor temor es resultar complicado de entender — que es exactamente por lo que el catálogo ya dice «sistema de comandas» y no «POS».</p>
+      <p class="xs mt-6" style="color:var(--noche-tenue)">IKEA · eBay · Seat</p>
+    </div>
+    <div class="c-4">
+      <div class="mono xs" style="color:var(--represa-300);letter-spacing:.10em">30 % · SECUNDARIO</div>
+      <h3 class="mt-6">El Cuidador</h3>
+      <p class="sm muted mt-6">Protege y acompaña. Es el acompañamiento post-entrega, que es lo único que separa un piloto de una operación real.</p>
+      <p class="xs mt-6" style="color:var(--noche-tenue)">Volvo · Mapfre</p>
+    </div>
+    <div class="c-3">
+      <div class="mono xs" style="color:var(--cal-9);letter-spacing:.10em">10 % · INTERNO</div>
+      <h3 class="mt-6">El Forajido</h3>
+      <p class="sm muted mt-6">Nunca sale a la calle. Explica por qué HAYAI se atreve, no cómo habla.</p>
+      <p class="xs mt-6" style="color:var(--noche-tenue)">Tejón de la miel</p>
+    </div>
+  </div>
+
+  <div class="grow"></div>
+  <hr class="rule">
+  <p class="cita mt-6" style="max-inline-size:30ch;font-size:var(--t-2)">El castor se muestra. El tejón se ejerce.</p>
+
+  <div class="folio"><span>Arquetipo</span><b>03</b></div>
+</section>
+
+<!-- ============ 04 · LOS DESCARTES ============ -->
+<section class="page page--cal2">
+  <div class="banda"></div>
+  <div class="kicker">Por qué no los otros</div>
+  <h2 class="nb">Los tres descartes<br>que había que argumentar</h2>
+  <p class="lede mt-6">No se descartaron por encajar mal, sino por encajar demasiado bien con lo que la empresa es por dentro y mal con lo que el mercado necesita que sea por fuera.</p>
+
+  <div class="mt-8">
+    <table>
+      <tr><th style="width:22%">Arquetipo</th><th style="width:34%">Por qué tienta</th><th>Por qué se descarta</th></tr>
+      <tr>
+        <td><h4>El Sabio</h4><p class="xs muted" style="margin-top:4px">Google · Wikipedia</p></td>
+        <td>Es lo que el equipo disfruta: explicar, enseñar, publicar. Y el brief pide «ser punto de referencia».</td>
+        <td>El mercado ya está educado — el 94,4 % de las empresas venezolanas tiene actitud positiva hacia digitalizarse. El Sabio explica algo ya aceptado, y crea la jerarquía «el que sabe / el que no sabe» frente a alguien que teme quedar en evidencia.</td>
+      </tr>
+      <tr>
+        <td><h4>El Mago</h4><p class="xs muted" style="margin-top:4px">Axe · Absolut</p></td>
+        <td>Es el arquetipo natural de la inteligencia artificial: transformación, magia, «puedo ayudarte a que suceda».</td>
+        <td>Promete transformación en una categoría donde el 95 % de los pilotos de IA no muestra impacto medible. Y esconde el mecanismo, cuando el operador necesita entenderlo para no perder su lugar.</td>
+      </tr>
+      <tr>
+        <td><h4>El Creador</h4><p class="xs muted" style="margin-top:4px">Apple · Lego</p></td>
+        <td>Es literalmente lo que hace el vibe coding: materializar ideas en cosas que funcionan.</td>
+        <td>Ata la identidad a <em>construir</em>, que es justo la actividad que se está abaratando —el costo cayó ~90 % en 18 meses— y celebra el impulso de sumar, cuando la hoja de ruta correcta aquí es de resta.</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="grid mt-8">
+    <div class="c-8">
+      <p style="font-family:var(--f-display);font-size:var(--t-2);line-height:1.25;letter-spacing:-.02em;font-weight:600">Los tres tienen la misma forma: son el arquetipo que la empresa quiere ser, no el que el cliente necesita que sea.</p>
+    </div>
+  </div>
+
+  <div class="folio"><span>Arquetipo</span><b>04</b></div>
+</section>
+
+<!-- ============ 05 · EL NOMBRE ============ -->
+<section class="page page--noche">
+  <div class="banda"></div>
+  <div class="kicker">El nombre</div>
+
+  <div class="grid mt-7" style="align-items:end">
+    <div class="c-4">
+      <div class="kanji" style="font-family:var(--f-jp);font-size:150px;line-height:1;color:var(--amber-500);font-weight:600">早い</div>
+      <div class="mono" style="font-size:var(--t--1);letter-spacing:.16em;color:var(--cal-9);margin-top:var(--s-5)">HAYAI · TEMPRANO, PRONTO</div>
+    </div>
+    <div class="c-7 start-6">
+      <h2 class="nb">Pronto,<br>no veloz.</h2>
+      <p class="sm muted mt-6" style="max-inline-size:44ch"><em>Hayai</em> se escribe de dos maneras en japonés. <span class="mono" style="color:var(--cal-6)">速い</span> es <em>veloz</em>: la cosa se mueve rápido. <span class="mono amber">早い</span> es <em>temprano</em>: la cosa llega antes.</p>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+
+  <div class="grid mt-7">
+    <div class="c-6">
+      <h4>Veloz es virtud de producto</h4>
+      <p class="sm muted mt-6" style="max-inline-size:40ch">Es el gadget. Y es el terreno donde HAYAI no puede ganar: el freelancer también es rápido, y con el costo de construir en caída libre, todos van a serlo.</p>
+    </div>
+    <div class="c-6">
+      <h4 class="amber">Pronto es virtud de persona</h4>
+      <p class="sm mt-6" style="max-inline-size:40ch;color:var(--cal-6)">Es la que llega temprano, la que contesta antes de que la llamen. Es la ambulancia y el vecino. Y es el comportamiento número uno de esta empresa: <strong>se aparece</strong>.</p>
+    </div>
+  </div>
+
+  <div class="grow" style="display:flex;align-items:center">
+    <p style="font-family:var(--f-display);font-size:var(--t-3);line-height:1.2;letter-spacing:-.03em;font-weight:600;max-inline-size:26ch">El nombre no describe lo que HAYAI vende. Nombra lo que HAYAI hace cuando algo se rompe.</p>
+  </div>
+
+  <hr class="rule">
+  <div class="grid mt-6">
+    <div class="c-4"><div class="dato"><dt>Se dice</dt><dd>a-YÁI · hache muda</dd></div></div>
+    <div class="c-4"><div class="dato"><dt>Se escribe</dt><dd>HAYAI · siempre en versales</dd></div></div>
+    <div class="c-4"><div class="dato"><dt>Nunca</dt><dd class="muted">hayAI · HAY·AI · Hayai</dd></div></div>
+  </div>
+
+  <div class="folio"><span>Nombre</span><b>05</b></div>
+</section>
+
+<!-- ============ 06 · POSICIONAMIENTO ============ -->
+<section class="page">
+  <div class="banda"></div>
+  <div class="kicker">Posicionamiento</div>
+  <h2>Dónde estamos parados</h2>
+
+  <div class="grid mt-8">
+    <div class="c-7">
+      <div style="border-left:var(--banda) solid var(--amber-500);padding-left:var(--s-6)">
+        <p style="font-size:var(--t-1);line-height:1.5">
+          <strong>Para</strong> el dueño de un comercio pequeño en Barquisimeto que ya entendió que tiene que modernizarse pero no sabe por dónde ni en quién confiar,<br><br>
+          <strong>HAYAI es</strong> la empresa que le instala sistemas hechos para su negocio y se queda hasta que los esté usando de verdad.<br><br>
+          <strong>A diferencia de</strong> un freelancer, que entrega y desaparece, <strong>y de</strong> un software de escritorio, que obliga al negocio a adaptarse a él,<br><br>
+          <strong>porque</strong> somos tres personas de aquí, con el sistema montado en un día y el teléfono contestando en seis meses.
+        </p>
+      </div>
+    </div>
+    <div class="c-4 start-9">
+      <div class="kicker">Territorio</div>
+      <table style="font-size:var(--t--2)">
+        <tr><td style="padding-left:0">Innovación / futuro / IA</td><td style="text-align:right;color:var(--cal-9)">ocupado</td></tr>
+        <tr><td style="padding-left:0">Robustez contable</td><td style="text-align:right;color:var(--cal-9)">ocupado</td></tr>
+        <tr><td style="padding-left:0">Producto vertical</td><td style="text-align:right;color:var(--cal-9)">ocupado</td></tr>
+        <tr><td style="padding-left:0">Precio bajo</td><td style="text-align:right;color:var(--cal-9)">ocupado</td></tr>
+        <tr><td style="padding-left:0"><strong>Continuidad</strong></td><td style="text-align:right;color:var(--amber-700)"><strong>libre</strong></td></tr>
+        <tr><td style="padding-left:0"><strong>Cercanía competente</strong></td><td style="text-align:right;color:var(--amber-700)"><strong>libre</strong></td></tr>
+      </table>
+      <p class="xs muted mt-6">Los dos territorios vacíos son los dos arquetipos elegidos. No es coincidencia: son los que una empresa de tecnología casi nunca escoge.</p>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+  <div class="kicker mt-7">Las tres garantías</div>
+  <div class="grid mt-6">
+    <div class="c-4">
+      <h4>De entendimiento</h4>
+      <p class="sm muted mt-6">Si a los 30 días la persona que lo usa todos los días no lo está usando, volvemos las veces que haga falta, sin cobrar.</p>
+    </div>
+    <div class="c-4">
+      <h4>De respuesta</h4>
+      <p class="sm muted mt-6">De lunes a sábado, de 8 a 6, le contestamos el mismo día. Si el sistema está caído, a cualquier hora.</p>
+    </div>
+    <div class="c-4">
+      <h4>De salida</h4>
+      <p class="sm muted mt-6">Sus datos son suyos. Si algún día se quiere ir, se los entregamos en un archivo que pueda abrir, sin cobrar y sin trabas.</p>
+    </div>
+  </div>
+
+  <div class="folio"><span>Plataforma</span><b>06</b></div>
+</section>
+
+<!-- ============ 07 · ESLÓGANES ============ -->
+<section class="page page--noche">
+  <div class="banda"></div>
+  <div class="kicker">Sistema verbal</div>
+  <h2>Las tres que se usan</h2>
+  <p class="lede mt-6">Una marca con diez eslóganes no tiene ninguno. Estas tres tienen puesto asignado; el resto es munición.</p>
+
+  <div class="mt-8 stack" style="--s:0">
+    <div style="border-top:1px solid var(--noche-3);padding-top:var(--s-6)">
+      <div class="grid">
+        <div class="c-2" style="grid-column:span 2"><div class="num">01</div></div>
+        <div class="c-7">
+          <p style="font-family:var(--f-display);font-size:var(--t-4);line-height:1.1;letter-spacing:-.035em;font-weight:600;font-variation-settings:'SOFT' 20,'WONK' 1">Pronto en llegar.<br>Lentos en irnos.</p>
+        </div>
+        <div class="c-3">
+          <div class="dato"><dt>Puesto</dt><dd class="sm">Firma junto al logo</dd></div>
+          <div class="dato mt-6"><dt>Mecanismo</dt><dd class="sm">Antítesis · restricción convertida en promesa</dd></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--noche-3);padding-top:var(--s-6);margin-top:var(--s-7)">
+      <div class="grid">
+        <div style="grid-column:span 2"><div class="num">02</div></div>
+        <div class="c-7">
+          <p style="font-family:var(--f-display);font-size:var(--t-4);line-height:1.1;letter-spacing:-.035em;font-weight:600;font-variation-settings:'SOFT' 20,'WONK' 1">Su negocio sigue,<br>pase lo que pase.</p>
+        </div>
+        <div class="c-3">
+          <div class="dato"><dt>Puesto</dt><dd class="sm">Gancho de captación</dd></div>
+          <div class="dato mt-6"><dt>Mecanismo</dt><dd class="sm">Elipsis · el cliente completa el hueco</dd></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border-top:1px solid var(--noche-3);padding-top:var(--s-6);margin-top:var(--s-7)">
+      <div class="grid">
+        <div style="grid-column:span 2"><div class="num">03</div></div>
+        <div class="c-7">
+          <p style="font-family:var(--f-display);font-size:var(--t-4);line-height:1.1;letter-spacing:-.035em;font-weight:600;font-variation-settings:'SOFT' 20,'WONK' 1">Cuando se rompa,<br>ya vamos en camino.</p>
+        </div>
+        <div class="c-3">
+          <div class="dato"><dt>Puesto</dt><dd class="sm">Cierre de video</dd></div>
+          <div class="dato mt-6"><dt>Mecanismo</dt><dd class="sm">Promesa en el momento de la verdad</dd></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grow"></div>
+  <hr class="rule">
+  <div class="kicker mt-6">Banco</div>
+  <div class="grid mt-6" style="gap:var(--s-5)">
+    <div class="c-4"><p class="sm" style="color:var(--cal-6)">Un sistema que nadie usa no sirve.</p></div>
+    <div class="c-4"><p class="sm" style="color:var(--cal-6)">Le enseñamos hasta que lo use.</p></div>
+    <div class="c-4"><p class="sm" style="color:var(--cal-6)">Somos tres, y contestamos nosotros.</p></div>
+    <div class="c-4"><p class="sm" style="color:var(--cal-6)">Se lo montamos, le enseñamos y quedamos pendientes.</p></div>
+    <div class="c-4"><p class="sm" style="color:var(--cal-6)">Pregunte las veces que haga falta.</p></div>
+    <div class="c-4"><p class="sm" style="color:var(--cal-6)">No depende de nada más que de usted.</p></div>
+  </div>
+
+  <div class="folio"><span>Verbal</span><b>07</b></div>
+</section>
+
+<!-- ============ 08 · IDENTIDAD VERBAL ============ -->
+<section class="page">
+  <div class="banda"></div>
+  <div class="kicker">Identidad verbal</div>
+  <h2>Cómo habla HAYAI</h2>
+
+  <div class="grid mt-7">
+    <div class="c-3"><h4>Llana</h4><p class="sm muted mt-6">Una idea por frase. Si una palabra necesita explicación, se cambia.</p></div>
+    <div class="c-3"><h4>Templada</h4><p class="sm muted mt-6">No se entusiasma de más. La calma es señal de que uno ya vio esto antes.</p></div>
+    <div class="c-3"><h4>Concreta</h4><p class="sm muted mt-6">Cada afirmación trae un número, un nombre o un ejemplo.</p></div>
+    <div class="c-3"><h4>Sin ego</h4><p class="sm muted mt-6">La autoridad se demuestra mostrando trabajo, nunca reclamándola.</p></div>
+  </div>
+
+  <hr class="rule mt-8">
+  <div class="kicker mt-7">Se dice · no se dice</div>
+  <div class="par mt-6">
+    <div class="si">sistema</div><div class="no">solución, plataforma</div>
+    <div class="si">montar, instalar</div><div class="no">implementar, desplegar</div>
+    <div class="si">enseñar</div><div class="no">capacitar, onboarding</div>
+    <div class="si">lo que vendiste ayer</div><div class="no">analítica, insights</div>
+    <div class="si">te avisa por WhatsApp</div><div class="no">notificaciones automatizadas</div>
+    <div class="si">cuesta X y se paga así</div><div class="no">inversión, ticket</div>
+    <div class="si">negocio</div><div class="no">pyme, unidad de negocio</div>
+  </div>
+
+  <div class="grid mt-8">
+    <div class="c-7">
+      <h4>La palabra «IA»</h4>
+      <p class="sm muted mt-6">Se usa, no se esconde, pero <strong>nunca es el sujeto de la frase</strong>. El sujeto es siempre el negocio o el resultado. «El sistema te contesta los mensajes», sí. «La IA revoluciona tu atención al cliente», no.</p>
+    </div>
+    <div class="c-4 start-9">
+      <div class="dato"><dt>Con el dueño</dt><dd>Usted</dd></div>
+      <div class="dato mt-6"><dt>Con el operador</dt><dd>Tú</dd></div>
+      <div class="dato mt-6"><dt>Nunca</dt><dd class="muted">Vos</dd></div>
+    </div>
+  </div>
+
+  <div class="folio"><span>Verbal</span><b>08</b></div>
+</section>
+
+<!-- ============ 09 · LOS TRES ACTIVOS ============ -->
+<section class="page page--cal2">
+  <div class="banda"></div>
+  <div class="kicker">Arquitectura</div>
+  <h2>Lo que sí lleva nombre propio</h2>
+  <p class="lede mt-6">Los productos se llaman como el cliente los llamaría. Solo lleva nombre propio lo que diferencia, no lo que se vende.</p>
+
+  <div class="grid grid--slots mt-8" style="row-gap:var(--s-7)">
+    <div class="c-4">
+      <div class="slot slot--cuadro" data-n="03"><b>icono-continuo.svg</b><span>512×512</span></div>
+      <h3 class="mt-6">Modo Continuo</h3>
+      <p class="sm muted mt-6">El atributo transversal: todo sistema opera desde el teléfono, guarda local y sincroniza después. El negocio sigue, pase lo que pase.</p>
+    </div>
+    <div class="c-4">
+      <div class="slot slot--cuadro" data-n="04"><b>icono-respaldo.svg</b><span>512×512</span></div>
+      <h3 class="mt-6">El Respaldo</h3>
+      <p class="sm muted mt-6">El acompañamiento con nombre, precio y horario. Incluye el reporte mensual: qué hizo el sistema, qué ahorró y qué funciones no se están usando.</p>
+    </div>
+    <div class="c-4">
+      <div class="slot slot--cuadro" data-n="05"><b>icono-mudanza.svg</b><span>512×512</span></div>
+      <h3 class="mt-6">La Mudanza</h3>
+      <p class="sm muted mt-6">La migración asistida. HAYAI carga el inventario y los datos del sistema viejo. El cliente no carga nada, y el operador tampoco.</p>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+  <div class="kicker mt-7">Catálogo · nombres comunes</div>
+  <div class="grid mt-6">
+    <div class="c-4"><p class="sm">Sistema de comandas</p></div>
+    <div class="c-4"><p class="sm">Tienda online</p></div>
+    <div class="c-4"><p class="sm">Concesionario virtual</p></div>
+    <div class="c-4"><p class="sm">Agente de WhatsApp</p></div>
+    <div class="c-4"><p class="sm">Sistema de facturación</p></div>
+  </div>
+  <p class="xs muted mt-6" style="max-inline-size:60ch">Un cliente tiene que poder repetirle a su compadre lo que compró, sin equivocarse. Por eso no hay submarcas: todo suma a HAYAI o no se nombra.</p>
+
+  <div class="folio"><span>Arquitectura</span><b>09</b></div>
+</section>
+
+<!-- ============ 10 · COLOR ============ -->
+<section class="page page--noche">
+  <div class="banda"></div>
+  <div class="kicker">Dirección visual</div>
+  <h2 class="nb">El crepúsculo<br>de Barquisimeto</h2>
+  <p class="lede mt-6" style="max-inline-size:46ch">Ámbar cálido sobre un oscuro con temperatura. Es la miel del tejón y es el color que toma la ciudad a las seis de la tarde. Ninguna empresa de tecnología del mercado está ahí: todas están en morado y azul eléctrico.</p>
+
+  <div class="mt-8">
+    <div class="kicker">Ámbar · miel — el acento</div>
+    <div class="swatches mt-6">
+      <div class="sw"><i style="background:var(--amber-100)"></i><b>amber-100</b><span>#FFEDD9</span></div>
+      <div class="sw"><i style="background:var(--amber-300)"></i><b>amber-300</b><span>#FFC98B</span></div>
+      <div class="sw"><i style="background:var(--amber-500);border-color:var(--amber-500)"></i><b>amber-500</b><span>#EF9D25</span></div>
+      <div class="sw"><i style="background:var(--amber-700)"></i><b>amber-700</b><span>#AB7225</span></div>
+      <div class="sw"><i style="background:var(--amber-900)"></i><b>amber-900</b><span>#6D4610</span></div>
+    </div>
+  </div>
+
+  <div class="mt-7">
+    <div class="kicker">Noche · superficies</div>
+    <div class="swatches mt-6">
+      <div class="sw"><i style="background:var(--noche-0)"></i><b>noche-0</b><span>#16110B</span></div>
+      <div class="sw"><i style="background:var(--noche-1)"></i><b>noche-1</b><span>#1D1711</span></div>
+      <div class="sw"><i style="background:var(--noche-2)"></i><b>noche-2</b><span>#251F18</span></div>
+      <div class="sw"><i style="background:var(--noche-3)"></i><b>noche-3</b><span>#302921</span></div>
+      <div class="sw"></div>
+    </div>
+  </div>
+
+  <div class="mt-7">
+    <div class="kicker">Cal · neutros cálidos</div>
+    <div class="swatches mt-6">
+      <div class="sw"><i style="background:var(--cal-1)"></i><b>cal-1</b><span>#FBF8F4</span></div>
+      <div class="sw"><i style="background:var(--cal-3)"></i><b>cal-3</b><span>#ECE7E2</span></div>
+      <div class="sw"><i style="background:var(--cal-6)"></i><b>cal-6</b><span>#D5D0CA</span></div>
+      <div class="sw"><i style="background:var(--cal-11)"></i><b>cal-11</b><span>#69625B</span></div>
+      <div class="sw"><i style="background:var(--cal-12)"></i><b>cal-12</b><span>#241E17</span></div>
+    </div>
+  </div>
+
+  <div class="mt-7">
+    <div class="kicker">Represa · apoyo</div>
+    <div class="swatches mt-6">
+      <div class="sw"><i style="background:var(--represa-300)"></i><b>represa-300</b><span>#85ACB6</span></div>
+      <div class="sw"><i style="background:var(--represa-500)"></i><b>represa-500</b><span>#3D727F</span></div>
+      <div class="sw"><i style="background:var(--represa-700)"></i><b>represa-700</b><span>#245560</span></div>
+      <div class="sw"><i style="background:var(--verde)"></i><b>verde</b><span>#69AA77</span></div>
+      <div class="sw"><i style="background:var(--rojo)"></i><b>rojo</b><span>#B6322B</span></div>
+    </div>
+  </div>
+
+  <hr class="rule mt-7">
+  <div class="grid mt-6">
+    <div class="c-4"><div class="dato"><dt>Reparto de área</dt><dd class="sm">Neutros 85–92 % · ámbar 3–5 % · represa 3–8 %</dd></div></div>
+    <div class="c-4"><div class="dato"><dt>Regla dura</dt><dd class="sm">El texto sobre ámbar es noche-0, nunca blanco</dd></div></div>
+    <div class="c-4"><div class="dato"><dt>Prohibido</dt><dd class="sm">Degradados · morado · azul eléctrico</dd></div></div>
+  </div>
+
+  <div class="folio"><span>Color</span><b>10</b></div>
+</section>
+
+<!-- ============ 11 · TIPOGRAFÍA ============ -->
+<section class="page">
+  <div class="banda"></div>
+  <div class="kicker">Tipografía</div>
+  <h2 class="nb">Dos familias<br>y una monoespaciada</h2>
+
+  <div class="mt-8" style="border-top:1px solid var(--cal-6);padding-top:var(--s-6)">
+    <div class="grid" style="align-items:baseline">
+      <div class="c-3"><div class="mono xs" style="letter-spacing:.10em;color:var(--cal-9)">DISPLAY</div><h4 class="mt-6">Fraunces</h4><p class="xs muted mt-6">Serif de carácter con ejes de suavidad y <em>wonk</em>. El «clásico modernizándose» hecho letra. Wonk activo solo sobre 40 px.</p></div>
+      <div class="c-9">
+        <div style="font-family:var(--f-display);font-size:64px;line-height:1;letter-spacing:-.04em;font-weight:700;font-variation-settings:'SOFT' 30,'WONK' 1">Aa Bb Cc Áá Ññ</div>
+        <div style="font-family:var(--f-display);font-size:var(--t-2);line-height:1.2;letter-spacing:-.02em;font-weight:600;margin-top:var(--s-5)">Pronto en llegar. Lentos en irnos.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-7" style="border-top:1px solid var(--cal-6);padding-top:var(--s-6)">
+    <div class="grid" style="align-items:baseline">
+      <div class="c-3"><div class="mono xs" style="letter-spacing:.10em;color:var(--cal-9)">TEXTO</div><h4 class="mt-6">IBM Plex Sans</h4><p class="xs muted mt-6">Grotesca con calidez de ingeniería y diacríticos impecables. Dice «hecho por gente que construye sistemas» sin la frialdad de Inter.</p></div>
+      <div class="c-9">
+        <div style="font-size:40px;line-height:1.1;font-weight:600;letter-spacing:-.02em">Aa Bb Cc Áá Ññ</div>
+        <p class="sm mt-6" style="max-inline-size:56ch">Montamos sistemas de automatización para negocios pequeños. Los hacemos rápido, porque hoy se pueden hacer rápido. Y cuando están montados, seguimos ahí.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-7" style="border-top:1px solid var(--cal-6);padding-top:var(--s-6)">
+    <div class="grid" style="align-items:baseline">
+      <div class="c-3"><div class="mono xs" style="letter-spacing:.10em;color:var(--cal-9)">CIFRAS</div><h4 class="mt-6">IBM Plex Mono</h4><p class="xs muted mt-6">Todo precio, factura, correlativo y reporte. Los números de HAYAI se pueden verificar y tienen que verse verificables.</p></div>
+      <div class="c-9">
+        <div class="mono" style="font-size:34px;letter-spacing:-.01em">0123456789 · $ 1.480,00</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule mt-7">
+  <div class="grid mt-6">
+    <div class="c-3"><div class="dato"><dt>Base</dt><dd class="mono sm">17 px</dd></div></div>
+    <div class="c-3"><div class="dato"><dt>Ratio</dt><dd class="mono sm">1,25</dd></div></div>
+    <div class="c-3"><div class="dato"><dt>Escala</dt><dd class="mono sm">11·14·17·21·27·34·42·53·66</dd></div></div>
+    <div class="c-3"><div class="dato"><dt>Prohibidas</dt><dd class="sm muted">Inter · Poppins · Montserrat</dd></div></div>
+  </div>
+
+  <div class="folio"><span>Tipografía</span><b>11</b></div>
+</section>
+
+<!-- ============ 12 · LOGO ============ -->
+<section class="page page--noche">
+  <div class="banda"></div>
+  <div class="kicker">Marca gráfica · pendiente de generar</div>
+  <h2>El logo</h2>
+  <p class="lede mt-6" style="max-inline-size:50ch">Ruta recomendada: un cuadrado en noche-0 con una banda ámbar que funciona a la vez como la raya dorsal del tejón y como el travesaño de una <strong class="amber">H</strong>. Logotipo en Fraunces 600–700, versales, tracking −0,03 em.</p>
+
+  <div class="grid grid--slots mt-8" style="row-gap:var(--s-6)">
+    <div class="c-7">
+      <div class="slot slot--ancho" data-n="06"><b>logo-horizontal-negativo.svg</b><span>Isotipo + logotipo sobre oscuro</span></div>
+    </div>
+    <div class="c-5">
+      <div class="slot slot--ancho" data-n="07"><b>logo-apilado.svg</b><span>Versión vertical</span></div>
+    </div>
+    <div class="c-3">
+      <div class="slot slot--cuadro" data-n="08"><b>isotipo.svg</b><span>Solo símbolo</span></div>
+    </div>
+    <div class="c-3">
+      <div class="slot slot--cuadro" data-n="09"><b>avatar-whatsapp.png</b><span>Circular · 640×640</span></div>
+    </div>
+    <div class="c-3">
+      <div class="slot slot--cuadro" data-n="10"><b>logo-una-tinta-pos.svg</b><span>Positivo · vinilo</span></div>
+    </div>
+    <div class="c-3">
+      <div class="slot slot--cuadro" data-n="11"><b>logo-una-tinta-neg.svg</b><span>Negativo · bordado</span></div>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+  <div class="grid mt-6">
+    <div class="c-4"><div class="dato"><dt>Tamaño mínimo</dt><dd class="sm">24 px de alto (completo) · 16 px (isotipo)</dd></div></div>
+    <div class="c-4"><div class="dato"><dt>Debe sobrevivir a</dt><dd class="sm">Avatar de 40 px · vinilo de una tinta · bordado · sello en factura</dd></div></div>
+    <div class="c-4"><div class="dato"><dt>Sin</dt><dd class="sm muted">Degradados · sombras · bisel · cerebros · circuitos · encierro en círculo</dd></div></div>
+  </div>
+
+  <div class="folio"><span>Logo</span><b>12</b></div>
+</section>
+
+<!-- ============ 13 · APLICACIONES ============ -->
+<section class="page">
+  <div class="banda"></div>
+  <div class="kicker">Aplicaciones · pendientes de generar</div>
+  <h2>Cómo se ve puesto</h2>
+  <p class="lede mt-6">El sistema está diseñado para sobrevivir a una imprenta de la Carrera 19: fondo oscuro, ámbar sólido, sin cuatricromía complicada.</p>
+
+  <div class="grid grid--slots mt-8" style="row-gap:var(--s-6)">
+    <div class="c-6"><div class="slot slot--ancho" data-n="12"><b>tarjeta-frente.jpg</b><span>Mockup · 85×55 mm</span></div></div>
+    <div class="c-6"><div class="slot slot--ancho" data-n="13"><b>tarjeta-reverso.jpg</b><span>Mockup · 85×55 mm</span></div></div>
+    <div class="c-4"><div class="slot slot--retrato" data-n="14"><b>franela-uniforme.jpg</b><span>Camisa de trabajo</span></div></div>
+    <div class="c-4"><div class="slot slot--retrato" data-n="15"><b>gorra-o-bolso.jpg</b><span>Accesorio de campo</span></div></div>
+    <div class="c-4"><div class="slot slot--retrato" data-n="16"><b>vehiculo-vinilo.jpg</b><span>Lateral de la camioneta</span></div></div>
+  </div>
+
+  <div class="grid grid--slots mt-6">
+    <div class="c-8"><div class="slot slot--ancho" data-n="17"><b>propuesta-una-pagina.jpg</b><span>Plantilla de propuesta comercial impresa</span></div></div>
+    <div class="c-4"><div class="slot slot--retrato" data-n="18"><b>telefono-sistema.jpg</b><span>El sistema en el teléfono, dentro de un negocio real</span></div></div>
+  </div>
+
+  <div class="folio"><span>Aplicaciones</span><b>13</b></div>
+</section>
+
+<!-- ============ 14 · EQUIPO ============ -->
+<section class="page page--cal2">
+  <div class="banda"></div>
+  <div class="kicker">Equipo · pendiente de generar</div>
+  <h2>Las tres personas</h2>
+  <p class="lede mt-6" style="max-inline-size:50ch">Siempre en color. Nunca stock, nunca desaturado. La luz de la tarde de Barquisimeto ya es la paleta de la marca.</p>
+
+  <div class="grid grid--slots mt-8">
+    <div class="c-4"><div class="slot slot--retrato" data-n="19"><b>retrato-gerencia.jpg</b><span>Gerencia y administración</span></div></div>
+    <div class="c-4"><div class="slot slot--retrato" data-n="20"><b>retrato-backend.jpg</b><span>Desarrollo backend / IA</span></div></div>
+    <div class="c-4"><div class="slot slot--retrato" data-n="21"><b>retrato-marketing.jpg</b><span>Marketing digital</span></div></div>
+  </div>
+
+  <div class="grid grid--slots mt-6">
+    <div class="c-8"><div class="slot slot--ancho" data-n="22"><b>equipo-en-campo.jpg</b><span>Los tres dentro de un negocio real, trabajando</span></div></div>
+    <div class="c-4">
+      <div class="kicker">Reglas de foto</div>
+      <ul class="sm muted mt-6" style="list-style:none;display:flex;flex-direction:column;gap:var(--s-3)">
+        <li>Se fotografía el negocio, no la pantalla.</li>
+        <li>La persona antes que el producto.</li>
+        <li>Luz disponible, sin flash duro.</li>
+        <li>Pie de foto con nombre y zona.</li>
+        <li>Una captura fea y real vence a un render bonito.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="folio"><span>Equipo</span><b>14</b></div>
+</section>
+
+<!-- ============ 15 · USOS INCORRECTOS ============ -->
+<section class="page">
+  <div class="banda"></div>
+  <div class="kicker">Guardarraíles</div>
+  <h2>Lo que rompe la marca</h2>
+
+  <div class="grid mt-8" style="row-gap:var(--s-7)">
+    <div class="c-6">
+      <div class="kicker">En lo gráfico</div>
+      <table class="mt-6">
+        <tr><td style="padding-left:0">Morado, índigo o azul eléctrico</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Degradados de un color a otro</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Cerebros, circuitos, robots, ✨</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Sombras y tarjetas flotantes</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Stock de oficinas y gente sonriendo</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Grises puros sin temperatura</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+      </table>
+    </div>
+    <div class="c-6">
+      <div class="kicker">En lo verbal</div>
+      <table class="mt-6">
+        <tr><td style="padding-left:0">«Lleva tu negocio al siguiente nivel»</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">«Soluciones a medida»</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">«Transformación digital»</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Cualquier frase en inglés</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Nombrar a la competencia</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+        <tr><td style="padding-left:0">Temas sensibles del país</td><td style="text-align:right;color:var(--rojo)">no</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <hr class="rule mt-8">
+  <div class="kicker mt-7">Las cinco preguntas antes de publicar</div>
+  <div class="grid mt-6">
+    <div class="c-4"><div class="num">01</div><p class="sm mt-6">¿Se entiende sin explicar ninguna palabra?</p></div>
+    <div class="c-4"><div class="num">02</div><p class="sm mt-6">¿Hay un negocio real, con nombre, detrás de lo que afirmamos?</p></div>
+    <div class="c-4"><div class="num">03</div><p class="sm mt-6">¿Esto lo podría haber publicado cualquier otra empresa de IA?</p></div>
+    <div class="c-4 mt-7"><div class="num">04</div><p class="sm mt-6">¿Mostramos trabajo, o explicamos lo que sabemos?</p></div>
+    <div class="c-4 mt-7"><div class="num">05</div><p class="sm mt-6">¿Alguien podría sentirse atrasado o bruto leyendo esto?</p></div>
+  </div>
+
+  <div class="folio"><span>Guardarraíles</span><b>15</b></div>
+</section>
+
+<!-- ============ 16 · CIERRE ============ -->
+<section class="page page--noche">
+  <div class="banda"></div>
+  <div class="kicker">Manifiesto</div>
+
+  <div class="grow" style="display:flex;align-items:center">
+    <div class="grid" style="width:100%">
+      <div class="c-7">
+        <p style="font-family:var(--f-display);font-size:var(--t-2);line-height:1.35;letter-spacing:-.015em;font-weight:400">
+          Aquí se trabaja con lo que hay. Con el cuaderno de la caja. Con el hijo que ayuda los sábados. Con veinte años de saber quién compra qué y a qué hora, guardados en la cabeza de una sola persona.
+          <br><br>
+          Y a nosotros nos parece que eso no es atraso. Eso es un negocio que aguantó todo.
+          <br><br>
+          Lo importante no es que montemos el sistema rápido. Es que cuando esté montado, seguimos ahí.
+        </p>
+      </div>
+      <div class="c-4 start-9" style="align-self:end">
+        <div class="slot slot--cuadro" data-n="23"><b>marca-agua-isotipo.svg</b><span>Isotipo en ámbar</span></div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="rule">
+  <div class="grid mt-6" style="align-items:end">
+    <div class="c-6">
+      <div style="font-family:var(--f-display);font-size:var(--t-4);line-height:1;letter-spacing:-.04em;font-weight:700;font-variation-settings:'SOFT' 30,'WONK' 1">HAYAI</div>
+      <div class="mono xs mt-6" style="color:var(--cal-9);letter-spacing:.06em">hayai.com.ve · Barquisimeto, Venezuela</div>
+    </div>
+    <div class="c-5 start-8" style="text-align:right">
+      <p style="font-family:var(--f-display);font-size:var(--t-2);line-height:1.15;letter-spacing:-.02em;font-weight:600;color:var(--amber-500)">Pronto en llegar.<br>Lentos en irnos.</p>
+    </div>
+  </div>
+
+  <div class="folio"><span>Vitrina de marca · v1 · agosto 2026</span><b>16</b></div>
+</section>
+
+</main>
+</body>
+</html>
