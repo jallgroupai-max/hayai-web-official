@@ -1,0 +1,9 @@
+# Herramientas de autoría (no forman parte del sitio desplegado)
+tools/node_modules/
+
+# Capturas de verificación: se regeneran con `npm run check -- --shots`
+screenshots/check/
+
+# Sistema
+.DS_Store
+Thumbs.db
