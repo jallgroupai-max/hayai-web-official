@@ -19,7 +19,7 @@
  * Si no hay WebGL o el sistema pide movimiento reducido, el escenario cae a una
  * alternativa HTML con la misma portada, los mismos datos y los mismos controles.
  */
-import { $, $$, el, pad2, clamp } from '../dom.js';
+import { $, $$, el, pad2, clamp, damp } from '../dom.js';
 import { getState, setState, setIndex, step, currentList, currentProject, subscribe } from '../store.js';
 import { categoryById } from '../data.js';
 import {
@@ -45,7 +45,7 @@ const HOVER_THROTTLE = 80;
  * Con la espera, cada proyecto es una pantalla: se sostiene, y el cambio ocurre
  * de golpe en el resto del tramo.
  */
-const DWELL = 0.55;
+const DWELL = 0.42;
 
 /**
  * Cuánto de asentado está el proyecto: 1 quieto en su sitio, 0 en mitad del
@@ -92,6 +92,11 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
   let suppressScrollSync = false;
   let lastHoverAt = 0;
   let swapTimer = 0;
+  /* Destino que marca el scroll. La galeria NO salta a el: lo persigue con
+     suavizado propio en el bucle de fotograma. Sin esto, con el scroll nativo
+     (o con movimiento reducido, donde no hay Lenis) cada muesca de rueda mueve
+     la posicion de golpe y el fundido se ve como un corte seco. */
+  let scrollTarget = 0;
   let titleItems = [];
 
   /* ── Columna de títulos ───────────────────────────────────────────────── */
@@ -310,16 +315,29 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
     onFrame((dt) => {
       // En modo Explorar manda el otro controlador: aquí no se dibuja nada.
       if (getState().mode === 'explore') return;
+      const total = currentList().length;
+
       if (controllerDrives()) {
         const pos = controller.update(dt);
         gallery.setPosition(pos);
-        const idx = controller.index();
+        scrollTarget = pos;
+      } else if (total) {
+        // La galeria persigue al scroll en vez de pegarse a el: asi el fundido
+        // dura lo que tiene que durar aunque la rueda avance a saltos.
+        const eased = damp(gallery.position, scrollTarget, 0.2, dt);
+        gallery.setPosition(Math.abs(eased - scrollTarget) < 0.0008 ? scrollTarget : eased);
+      }
+
+      if (total) {
+        const idx = clamp(Math.round(gallery.position), 0, total - 1);
         if (idx !== getState().index) {
+          const previous = suppressScrollSync;
           suppressScrollSync = true;
           setIndex(idx);
-          suppressScrollSync = false;
+          suppressScrollSync = previous;
         }
       }
+
       gallery.update(dt);
       if (components) components.setSettle(settleAmount(gallery.position));
     });
@@ -352,18 +370,8 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
       onUpdate: (self) => {
         const total = currentList().length;
         if (!total) return;
-        const pos = dwellPosition(self.progress * Math.max(0, total - 1));
-        gallery.setPosition(pos);
-        if (controller) controller.jumpTo(pos, { immediate: true });
+        scrollTarget = dwellPosition(self.progress * Math.max(0, total - 1));
         setIntroOut(self.progress > 0.035);
-
-        const idx = clamp(Math.round(pos), 0, total - 1);
-        if (idx !== getState().index) {
-          const previous = suppressScrollSync;
-          suppressScrollSync = true;
-          setIndex(idx);
-          suppressScrollSync = previous;
-        }
       }
     });
   }
@@ -419,7 +427,10 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
       applyStageHeight();
       ScrollTrigger.refresh();
       if (usesGallery && controller) controller.jumpTo(state.index, { immediate: true });
-      if (usesGallery) gallery.setPosition(state.index);
+      if (usesGallery) {
+        gallery.setPosition(state.index);
+        scrollTarget = state.index;
+      }
     }
     if (changed.has('index') || changed.has('filter')) {
       renderMeta();

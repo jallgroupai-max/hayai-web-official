@@ -438,11 +438,17 @@ for (const vp of VIEWPORTS) {
       await sleep(600);
     });
 
-  // Dos ciclos de calentamiento: las texturas se suben a la GPU la primera vez
-  // que se dibuja cada portada, así que antes de medir hay que verlas todas.
-  await cycle();
-  await cycle();
-  const before = await snapshot();
+  // Calentamiento hasta estabilizar: una textura se sube a la GPU la primera vez
+  // que se dibuja su portada, y con tres mallas en pantalla hacen falta varias
+  // vueltas para haberlas visto todas. Fijar el numero de ciclos a ojo hacia que
+  // la medida dependiera de cuantas hubieran salido ya.
+  let before = await snapshot();
+  for (let i = 0; i < 6; i++) {
+    await cycle();
+    const ahora = await snapshot();
+    if (ahora.textures === before.textures) break;
+    before = ahora;
+  }
   // Tercer ciclo idéntico: si el índice circular filtrara recursos, se vería aquí.
   await cycle();
   const after = await snapshot();
