@@ -185,10 +185,6 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
     }, 170);
   }
 
-  function setIntroOut(out) {
-    stage.dataset.intro = out ? 'out' : 'in';
-  }
-
   /* ── Geometría del recorrido ──────────────────────────────────────────── */
 
   function stageTravel() {
@@ -357,7 +353,6 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
       trigger = null;
     }
     if (!usesGallery || !isDesktopStage()) {
-      setIntroOut(false);
       if (controller) controller.setDriving(true);
       return;
     }
@@ -371,7 +366,6 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
         const total = currentList().length;
         if (!total) return;
         scrollTarget = dwellPosition(self.progress * Math.max(0, total - 1));
-        setIntroOut(self.progress > 0.035);
       }
     });
   }

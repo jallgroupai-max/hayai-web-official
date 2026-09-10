@@ -274,23 +274,17 @@
   min-height: 0;
 }
 
+/* La propuesta se queda. Es lo que dice a qué se dedica HAYAI, así que
+   acompaña a todo el recorrido de proyectos y sólo se va cuando se va la
+   sección entera. */
 .stage__pitch {
   display: grid;
   gap: clamp(12px, 1.8vh, 20px);
   justify-items: start;
   max-width: 30ch;
-  transition: opacity var(--t-open) var(--ease), transform var(--t-open) var(--ease);
 }
 
 .stage__title { font-size: clamp(26px, 2.5vw, 44px); }
-
-/* La propuesta se retira cuando arranca el recorrido: a partir de ahí manda
-   el proyecto, no el eslogan. */
-.stage[data-intro="out"] .stage__pitch {
-  opacity: 0;
-  transform: translateY(-12px);
-  pointer-events: none;
-}
 
 .stage__facts {
   display: grid;
@@ -1016,9 +1010,6 @@ html:not([data-gallery="fallback"]) .work-grid { display: none; }
     max-width: none;
     padding-top: calc(var(--header-h) + 34px);
   }
-
-  /* En móvil la propuesta no se retira: no hay recorrido fijado que la sustituya. */
-  .stage[data-intro="out"] .stage__pitch { opacity: 1; transform: none; pointer-events: auto; }
 
   .stage__canvas {
     order: 2;
