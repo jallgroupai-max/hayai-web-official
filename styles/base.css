@@ -1,52 +1,53 @@
 /* ============================================================================
    HAYAI — base: tokens, reset, tipografía y utilidades.
    El sitio se sirve estático: no hay preprocesador ni paso de build.
+
+   Tres decisiones que gobiernan todo lo demás:
+   1. UN solo tema. La página entera va sobre piedra clara, de la cabecera al
+      pie. Ninguna sección se invierte a oscuro a mitad de recorrido.
+   2. UN solo radio: 0. Nada redondeado, ni botones ni láminas ni campos.
+   3. La jerarquía la hacen la opacidad y el desenfoque, no las cajas. Aquí casi
+      no hay bordes ni sombras: hay tamaño, peso y aire.
    ========================================================================== */
 
 :root {
-  /* Identidad ------------------------------------------------------------ */
-  --ivory: #fbf8f4;
-  --ivory-warm: #f4efe8;
-  --ink: #241e17;
-  --ink-deep: #16110b;
+  /* Superficie ---------------------------------------------------------- */
+  --paper: #e9e6e0;      /* piedra cálida: el fondo de todo el documento */
+  --paper-lift: #f1efea; /* un escalón más claro para paneles y campos */
+  --ink: #17130f;
+
+  /* Un único acento, en dos pesos. El ámbar de marca sólo mide 1,77:1 contra
+     el papel, así que sirve como RELLENO (con tinta encima: 8,4:1) pero nunca
+     como texto ni como línea. Para eso está la versión profunda, 5,35:1. */
   --amber: #ef9d25;
-  --amber-soft: #f7c37a;
-  --muted: #69625b;
-  --rule: #d5d0ca;
+  --amber-ink: #8f4a05;
 
-  /* Roles sobre fondo claro --------------------------------------------- */
-  --bg: var(--ivory);
-  --fg: var(--ink);
-  --fg-muted: var(--muted);
-  --line: var(--rule);
+  /* Escala de tinta. Los tres primeros escalones son para TEXTO y todos pasan
+     AA sobre el papel; los dos últimos son sólo filetes y decoración. */
+  --ink-90: rgba(23, 19, 15, 0.9);   /* 11,7:1 */
+  --ink-70: rgba(23, 19, 15, 0.72);  /*  6,6:1 */
+  --ink-soft: rgba(23, 19, 15, 0.64);/*  5,1:1 — mínimo para cualquier texto */
+  --ink-quiet: rgba(23, 19, 15, 0.5);/*  3,3:1 — sólo texto grande */
+  --ink-16: rgba(23, 19, 15, 0.16);  /* filetes */
+  --ink-08: rgba(23, 19, 15, 0.08);  /* decoración, nunca texto */
 
-  /* Roles sobre el escenario oscuro -------------------------------------- */
-  --stage-bg: var(--ink-deep);
-  --stage-fg: #f6f1ea;
-  --stage-muted: #a49b90;
-  --stage-line: rgba(246, 241, 234, 0.16);
-
-  /* Tipografía ----------------------------------------------------------- */
-  --display: "Archivo Black", "Arial Black", system-ui, sans-serif;
-  --sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  /* Tipografía ---------------------------------------------------------- */
+  --grotesk: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
 
-  /* Ritmo ---------------------------------------------------------------- */
-  --gutter: clamp(20px, 5vw, 72px);
-  --section-y: clamp(72px, 11vh, 152px);
-  --measure: 62ch;
-  --radius: 2px;
-  --radius-lg: 4px;
+  /* Ritmo --------------------------------------------------------------- */
+  --edge: clamp(16px, 2.6vw, 38px);   /* margen hasta el borde del viewport */
+  --section-y: clamp(88px, 16vh, 200px);
+  --radius: 0;
 
-  /* Movimiento: valores base de la experiencia (§7 del brief).
-     180–350 ms para respuestas de control, 550–900 ms para aperturas. */
+  /* Movimiento ---------------------------------------------------------- */
   --t-control: 220ms;
-  --t-control-slow: 340ms;
-  --t-open: 640ms;
+  --t-slow: 420ms;
+  --t-open: 700ms;
   --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
 
-  --header-h: 68px;
+  --header-h: 56px;
 }
 
 /* Reset ------------------------------------------------------------------ */
@@ -57,21 +58,22 @@
 html {
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  background: var(--paper);
 }
 
-/* Lenis toma el control del scroll: con smooth nativo activo los dos se pelean. */
+/* Lenis toma el control del scroll: con smooth nativo activo se pelean. */
+html.lenis { scroll-behavior: auto; }
 html.lenis,
 html.lenis body { height: auto; }
-html.lenis { scroll-behavior: auto; }
 .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--sans);
-  font-size: 16px;
-  line-height: 1.55;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--grotesk);
+  font-size: 15px;
+  line-height: 1.5;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -80,9 +82,8 @@ body {
 
 body[data-locked="true"] { overflow: hidden; }
 
-/* Cualquier regla de display (flex, grid…) gana al display:none implícito del
-   atributo hidden. Como el JS oculta con .hidden = true, se fuerza aquí una vez
-   en lugar de repetir la excepción en cada componente. */
+/* Cualquier regla de display gana al display:none implícito de [hidden].
+   Como el JS oculta con .hidden = true, se fuerza aquí una vez. */
 [hidden] { display: none !important; }
 
 h1, h2, h3, h4, p, figure, blockquote { margin: 0; }
@@ -103,63 +104,57 @@ input, textarea, select, button { font-family: inherit; font-size: inherit; }
 a { color: inherit; text-decoration: none; }
 
 :focus-visible {
-  outline: 2px solid var(--amber);
+  outline: 2px solid var(--amber-ink);
   outline-offset: 3px;
-  border-radius: var(--radius);
 }
 
-::selection { background: var(--amber); color: var(--ink-deep); }
+::selection { background: var(--amber); color: var(--ink); }
 
-/* Tipografía ------------------------------------------------------------- */
+/* Tipografía -------------------------------------------------------------
+   Dos registros y nada más: la grotesca para todo lo que se lee y la mono
+   para las etiquetas diminutas que se anclan a los bordes. */
+
 .display {
-  font-family: var(--display);
-  font-weight: 400;
-  line-height: 0.94;
-  letter-spacing: -0.025em;
+  font-family: var(--grotesk);
+  font-weight: 700;
+  line-height: 0.88;
+  letter-spacing: -0.04em;
   text-wrap: balance;
 }
 
-.eyebrow {
+/* Etiqueta mínima. Sin punto decorativo, sin separadores: sólo el texto. */
+.tag {
   font-family: var(--mono);
-  font-size: clamp(10px, 0.78vw, 12px);
-  letter-spacing: 0.18em;
+  font-size: 10px;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--fg-muted);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  color: var(--ink-soft);
 }
 
-.eyebrow::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--amber);
-  flex: none;
-}
-
-.eyebrow--plain::before { display: none; }
-
-.lede {
-  font-size: clamp(15px, 1.15vw, 18px);
-  line-height: 1.6;
-  color: var(--fg-muted);
-  max-width: 46ch;
-}
+.tag--ink { color: var(--ink); }
 
 .num {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
+}
+
+.lede {
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.55;
+  color: var(--ink-soft);
+  max-width: 44ch;
 }
 
 /* Utilidades ------------------------------------------------------------- */
+.edge { padding-inline: var(--edge); }
+
 .shell {
   width: 100%;
-  max-width: 1560px;
+  max-width: 1680px;
   margin-inline: auto;
-  padding-inline: var(--gutter);
+  padding-inline: var(--edge);
 }
 
 .visually-hidden {
@@ -169,7 +164,6 @@ a { color: inherit; text-decoration: none; }
   margin: -1px;
   padding: 0;
   overflow: hidden;
-  clip: rect(0 0 0 0);
   clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
@@ -177,16 +171,15 @@ a { color: inherit; text-decoration: none; }
 
 .skip-link {
   position: fixed;
-  top: 10px;
-  left: 10px;
+  top: 8px;
+  left: 8px;
   z-index: 200;
-  transform: translateY(-160%);
+  transform: translateY(-180%);
   background: var(--ink);
-  color: var(--ivory);
-  padding: 12px 18px;
-  border-radius: var(--radius);
+  color: var(--paper);
+  padding: 10px 16px;
   font-family: var(--mono);
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   transition: transform var(--t-control) var(--ease);
@@ -194,113 +187,78 @@ a { color: inherit; text-decoration: none; }
 
 .skip-link:focus-visible { transform: none; }
 
-/* Grano: una sola textura SVG reutilizada por el escenario y el pie. */
-.grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.035;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)' opacity='0.55'/%3E%3C/svg%3E");
-  background-size: 160px 160px;
-}
+/* Acciones ---------------------------------------------------------------
+   No hay píldoras. Hay dos cosas: un enlace subrayado y un bloque sólido
+   rectangular para la única llamada real de la página. */
 
-/* Botones ---------------------------------------------------------------- */
-.btn {
-  --btn-bg: var(--ink);
-  --btn-fg: var(--ivory);
-  --btn-line: var(--ink);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 0 22px;
-  border: 1px solid var(--btn-line);
-  border-radius: 999px;
-  background: var(--btn-bg);
-  color: var(--btn-fg);
-  font-family: var(--mono);
-  font-size: 12px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  white-space: nowrap;
-  transition: background var(--t-control) var(--ease),
-    color var(--t-control) var(--ease),
-    border-color var(--t-control) var(--ease),
-    transform var(--t-control) var(--ease);
-}
-
-.btn:hover { transform: translateY(-2px); }
-.btn:active { transform: translateY(0); }
-
-.btn--accent {
-  --btn-bg: var(--amber);
-  --btn-fg: var(--ink-deep);
-  --btn-line: var(--amber);
-}
-
-.btn--ghost {
-  --btn-bg: transparent;
-  --btn-fg: var(--fg);
-  --btn-line: var(--line);
-}
-
-.btn--ghost:hover {
-  --btn-bg: var(--ink);
-  --btn-fg: var(--ivory);
-  --btn-line: var(--ink);
-}
-
-.btn--on-dark {
-  --btn-bg: transparent;
-  --btn-fg: var(--stage-fg);
-  --btn-line: var(--stage-line);
-}
-
-.btn--on-dark:hover {
-  --btn-bg: var(--stage-fg);
-  --btn-fg: var(--ink-deep);
-  --btn-line: var(--stage-fg);
-}
-
-.btn--sm { min-height: 38px; padding: 0 16px; font-size: 11px; }
-
-.btn[disabled],
-.btn[aria-disabled="true"] {
-  opacity: 0.45;
-  pointer-events: none;
-}
-
-.btn .arrow { transition: transform var(--t-control) var(--ease); }
-.btn:hover .arrow { transform: translate(2px, -2px); }
-
-/* Enlaces subrayados desde el centro ------------------------------------- */
-.link-underline {
+.link {
   position: relative;
-  padding-bottom: 2px;
+  display: inline-block;
+  padding-bottom: 3px;
+  color: var(--ink);
 }
 
-.link-underline::after {
+.link::after {
   content: "";
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: auto 0 0 0;
   height: 1px;
   background: currentColor;
   transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--t-control-slow) var(--ease);
+  transform-origin: right;
+  transition: transform var(--t-slow) var(--ease);
 }
 
-.link-underline:hover::after,
-.link-underline[aria-current="true"]::after { transform: scaleX(1); }
+.link:hover::after,
+.link:focus-visible::after,
+.link[aria-current="true"]::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.link--muted { color: var(--ink-soft); transition: color var(--t-control) var(--ease); }
+.link--muted:hover { color: var(--ink); }
+
+.action {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 22px;
+  background: var(--ink);
+  color: var(--paper);
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: background var(--t-control) var(--ease), color var(--t-control) var(--ease);
+}
+
+.action:hover { background: var(--amber); color: var(--ink); }
+.action:active { transform: translateY(1px); }
+
+.action--amber { background: var(--amber); color: var(--ink); }
+.action--amber:hover { background: var(--ink); color: var(--paper); }
+
+.action--quiet {
+  background: transparent;
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--ink-16);
+}
+
+.action--quiet:hover { background: var(--ink); color: var(--paper); box-shadow: none; }
+
+.action[disabled],
+.action[aria-disabled="true"] { opacity: 0.35; pointer-events: none; }
+
+.action .glyph { transition: transform var(--t-control) var(--ease); }
+.action:hover .glyph { transform: translate(3px, -3px); }
 
 /* Revelado de texto ------------------------------------------------------ */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(18px);
+  transform: translateY(20px);
 }
 
 [data-reveal].is-in {
@@ -308,6 +266,27 @@ a { color: inherit; text-decoration: none; }
   transform: none;
   transition: opacity var(--t-open) var(--ease-out) var(--reveal-delay, 0ms),
     transform var(--t-open) var(--ease-out) var(--reveal-delay, 0ms);
+}
+
+/* Variante con máscara para los titulares grandes: el texto se descubre de
+   arriba abajo en lugar de aparecer. El contenido semántico no cambia.
+
+   El recorte va en un hijo, nunca en el elemento observado: IntersectionObserver
+   tiene en cuenta el clip-path del propio objetivo, así que un titular recortado
+   al 100 % jamás se considera visible y jamás se revelaría. */
+[data-reveal="mask"] { opacity: 1; }
+
+[data-reveal="mask"] > .mask-line {
+  display: block;
+  clip-path: inset(0 0 100% 0);
+  transform: translateY(0.16em);
+}
+
+[data-reveal="mask"].is-in > .mask-line {
+  clip-path: inset(0 0 -14% 0);
+  transform: none;
+  transition: clip-path 900ms var(--ease-out) var(--reveal-delay, 0ms),
+    transform 900ms var(--ease-out) var(--reveal-delay, 0ms);
 }
 
 /* Movimiento reducido ----------------------------------------------------- */
@@ -324,5 +303,5 @@ a { color: inherit; text-decoration: none; }
   }
 
   [data-reveal] { opacity: 1; transform: none; }
-  .btn:hover { transform: none; }
+  [data-reveal="mask"] > .mask-line { clip-path: none; transform: none; }
 }

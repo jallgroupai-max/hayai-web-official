@@ -12,11 +12,14 @@
  *  · Móvil: no hay fijación. El gesto vertical sigue desplazando la página y el
  *    controlador toma sólo los arrastres horizontales (bloqueo de eje).
  *
+ * La escena siempre gira en círculo aunque el recorrido sea finito: así el
+ * abanico se ve lleno también en el primer y el último proyecto. El scroll
+ * recorre 0..n-1; sólo el dibujado envuelve.
+ *
  * Si no hay WebGL o el sistema pide movimiento reducido, el escenario cae a una
- * alternativa HTML con la misma portada, los mismos metadatos y los mismos
- * controles.
+ * alternativa HTML con la misma portada, los mismos datos y los mismos controles.
  */
-import { $, $$, pad2, clamp } from '../dom.js';
+import { $, $$, el, pad2, clamp } from '../dom.js';
 import { getState, setState, setIndex, step, currentList, currentProject, subscribe } from '../store.js';
 import { categoryById } from '../data.js';
 import {
@@ -41,13 +44,11 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
   const emptyPanel = $('[data-stage-empty]');
   const fallbackImg = $('[data-fallback-img]');
 
-  const metaIndex = $('[data-meta-index]');
   const metaCategory = $('[data-meta-category]');
-  const metaTitle = $('[data-meta-title]');
   const metaDesc = $('[data-meta-desc]');
   const counterCurrent = $('[data-counter-current]');
   const counterTotal = $('[data-counter-total]');
-  const railThumb = $('[data-rail-thumb]');
+  const titleList = $('[data-title-list]');
   const openBtn = $('[data-action="open-project"]');
   const prevBtn = $('[data-action="prev"]');
   const nextBtn = $('[data-action="next"]');
@@ -60,6 +61,42 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
   let suppressScrollSync = false;
   let lastHoverAt = 0;
   let swapTimer = 0;
+  let titleItems = [];
+
+  /* ── Columna de títulos ───────────────────────────────────────────────── */
+
+  function buildTitles() {
+    const list = currentList();
+    titleItems = list.map((project, i) => {
+      const category = categoryById(project.category);
+      const item = el('button', { class: 'stage__title-item', type: 'button', 'aria-current': 'false' }, [
+        el('span', { class: 'tag stage__title-cat', text: category ? category.short : project.type }),
+        el('span', { class: 'stage__title-name', text: project.title }),
+        el('span', { class: 'stage__title-desc', text: project.description })
+      ]);
+      item.addEventListener('click', () => {
+        if (i === getState().index) {
+          if (project.file) onOpenProject(project);
+          return;
+        }
+        goToIndex(i);
+      });
+      return item;
+    });
+    titleList.replaceChildren(...titleItems);
+  }
+
+  function paintTitles() {
+    const index = getState().index;
+    titleItems.forEach((item, i) => item.setAttribute('aria-current', String(i === index)));
+
+    // La lista se desplaza para que el proyecto activo quede en el eje de la
+    // pantalla; los demás se alejan hacia arriba y hacia abajo.
+    const active = titleItems[index];
+    if (!active || !titleList.offsetHeight) return;
+    const shift = titleList.offsetHeight / 2 - (active.offsetTop + active.offsetHeight / 2);
+    titleList.style.transform = `translateY(${shift}px)`;
+  }
 
   /* ── Presentación ─────────────────────────────────────────────────────── */
 
@@ -69,12 +106,8 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     const total = list.length;
     const index = getState().index;
 
-    counterTotal.textContent = pad2(total);
     counterCurrent.textContent = pad2(total ? index + 1 : 0);
-
-    const share = total ? 100 / total : 100;
-    railThumb.style.setProperty('--thumb-h', `${share}%`);
-    railThumb.style.setProperty('--thumb-y', `${total ? (index / total) * 100 : 0}%`);
+    counterTotal.textContent = `/${pad2(total)}`;
 
     const disabled = total < 2;
     prevBtn.disabled = disabled;
@@ -82,23 +115,25 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
 
     emptyPanel.hidden = total > 0;
     meta.hidden = total === 0;
+    titleList.hidden = total === 0;
+
     if (!project) {
       openBtn.disabled = true;
       return;
     }
 
     openBtn.disabled = !project.file;
-    openBtn.querySelector('span').textContent = project.file ? 'Ver proyecto' : 'Próximamente';
+    openBtn.querySelector('span').textContent = project.file ? 'Ver caso' : 'Próximamente';
     if (fallbackImg) {
       fallbackImg.src = project.cover;
       fallbackImg.alt = `Portada del proyecto ${project.title}`;
     }
 
+    paintTitles();
+
     // El texto se cambia detrás de una máscara corta, no de golpe.
     const write = () => {
-      metaIndex.textContent = pad2(index + 1);
       metaCategory.textContent = (categoryById(project.category) || {}).title || project.type;
-      metaTitle.textContent = project.title;
       metaDesc.textContent = project.description;
     };
 
@@ -111,7 +146,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     swapTimer = setTimeout(() => {
       write();
       meta.dataset.swapping = 'false';
-    }, 180);
+    }, 170);
   }
 
   function setIntroOut(out) {
@@ -140,14 +175,19 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
 
   function scrollToIndex(index) {
     if (!trigger || !isDesktopStage()) return;
-    const start = trigger.start;
     const range = trigger.end - trigger.start;
     if (range <= 0) return;
     suppressScrollSync = true;
-    scrollTo(start + progressFor(index) * range, { duration: 0.9 });
+    scrollTo(trigger.start + progressFor(index) * range, { duration: 0.9 });
     setTimeout(() => {
       suppressScrollSync = false;
     }, 1000);
+  }
+
+  function goToIndex(index) {
+    setIndex(index);
+    if (isDesktopStage()) scrollToIndex(index);
+    else if (controller) controller.jumpTo(index);
   }
 
   /* ── Galería ──────────────────────────────────────────────────────────── */
@@ -156,11 +196,13 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     if (!usesGallery) return;
     const desktop = isDesktopStage();
     gallery.configure({
-      fitRatio: desktop ? 0.6 : 0.86,
-      widthRatio: desktop ? 0.62 : 0.74,
-      offsetRatio: desktop ? 0.1 : 0
+      fitRatio: desktop ? 0.5 : 0.72,
+      widthRatio: desktop ? 0.3 : 0.56,
+      offsetRatio: desktop ? 0.04 : 0,
+      offsetYRatio: desktop ? -0.03 : 0
     });
-    gallery.setLoop(false);
+    // El abanico envuelve siempre; el recorrido de scroll sigue siendo finito.
+    gallery.setLoop(true);
   }
 
   function syncGalleryList() {
@@ -175,8 +217,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     if (!usesGallery) return;
     const picked = gallery.pickAt(x, y);
     if (picked == null) return;
-    const list = currentList();
-    const project = list[picked];
+    const project = currentList()[picked];
     if (!project) return;
 
     if (picked === getState().index) {
@@ -184,9 +225,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
       return;
     }
     // Una lámina lateral se centra; no abre nada.
-    setIndex(picked);
-    if (isDesktopStage()) scrollToIndex(picked);
-    else if (controller) controller.jumpTo(picked);
+    goToIndex(picked);
   }
 
   function handleHover(x, y) {
@@ -219,10 +258,9 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     host.addEventListener('pointerleave', () => gallery.setHover(null));
 
     onFrame((dt) => {
-      // En modo Explorar manda el otro controlador: aqui no se dibuja nada.
+      // En modo Explorar manda el otro controlador: aquí no se dibuja nada.
       if (getState().mode === 'explore') return;
-      const desktop = isDesktopStage();
-      if (!desktop) {
+      if (!isDesktopStage()) {
         const pos = controller.update(dt);
         gallery.setPosition(pos);
         const idx = controller.index();
@@ -238,6 +276,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     window.addEventListener('resize', () => {
       gallery.resize();
       applyStageHeight();
+      paintTitles();
     });
   }
 
@@ -278,6 +317,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     });
   }
 
+  buildTitles();
   applyStageHeight();
   buildTrigger();
   renderMeta();
@@ -287,6 +327,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     applyStageHeight();
     buildTrigger();
     if (usesGallery) gallery.resize();
+    paintTitles();
     ScrollTrigger.refresh();
   });
 
@@ -323,6 +364,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
   subscribe((state, changed) => {
     if (changed.has('filter')) {
       syncGalleryList();
+      buildTitles();
       applyStageHeight();
       ScrollTrigger.refresh();
       if (usesGallery && controller) controller.jumpTo(state.index, { immediate: true });

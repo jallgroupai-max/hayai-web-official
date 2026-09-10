@@ -15,7 +15,11 @@ export function initReveal(root = document) {
   const observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
+        // Un salto por ancla puede dejar el bloque por encima del viewport sin
+        // haber cruzado nunca el umbral. Si ya quedó atrás, se revela igual:
+        // de lo contrario el contenido se quedaría invisible para siempre.
+        const alreadyPassed = entry.boundingClientRect.bottom <= 0;
+        if (!entry.isIntersecting && !alreadyPassed) continue;
         entry.target.classList.add('is-in');
         observer.unobserve(entry.target);
       }

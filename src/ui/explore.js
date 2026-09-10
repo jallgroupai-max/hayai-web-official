@@ -116,7 +116,7 @@ export function initExplore({ gallery, stageHost, stageController, onOpenProject
       root.dataset.open = 'true';
       gallery.mount(host);
       // Más aire que en el escenario: aquí la galería es todo el contenido.
-      gallery.configure({ fitRatio: 0.66, widthRatio: 0.5, offsetRatio: 0 });
+      gallery.configure({ fitRatio: 0.58, widthRatio: 0.34, offsetRatio: 0, offsetYRatio: 0 });
       gallery.resize();
     });
 

@@ -6,7 +6,7 @@
 <title>HAYAI · Software que hace avanzar tu negocio</title>
 <meta name="description" content="HAYAI es un estudio de software. Diseñamos y desarrollamos sistemas de comandas, concesionarios virtuales 360°, plataformas de hotelería, tiendas online y software a medida." />
 <link rel="canonical" href="https://hayai.com.ve/" />
-<meta name="theme-color" content="#16110B" />
+<meta name="theme-color" content="#E9E6E0" />
 <meta name="color-scheme" content="light" />
 
 <meta property="og:type" content="website" />
@@ -23,7 +23,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
 <link rel="stylesheet" href="./styles/base.css" />
 <link rel="stylesheet" href="./styles/site.css" />
 <link rel="preload" as="image" href="./covers/guarowook.jpg" fetchpriority="high" />
@@ -61,98 +61,99 @@
 <body id="top">
 <a class="skip-link" href="#contenido">Saltar al contenido</a>
 
-<header class="site-header" data-theme="dark">
-  <div class="site-header__inner shell">
-    <a class="brand" href="#top" aria-label="HAYAI, inicio">
-      <span class="brand__mark" aria-hidden="true"></span>
-      <span class="brand__word">HAYAI</span>
-    </a>
+<!-- ── Tira superior: todo anclado a los bordes, nada centrado ────────── -->
+<header class="topbar" data-topbar>
+  <a class="topbar__brand" href="#top" aria-label="HAYAI, inicio">HAYAI<sup>©</sup></a>
 
-    <nav class="site-nav" aria-label="Navegación principal">
-      <a class="link-underline" href="#trabajo">Proyectos</a>
-      <a class="link-underline" href="#soluciones">Soluciones</a>
-      <a class="link-underline" href="#equipo">Equipo</a>
-    </nav>
+  <nav class="topbar__nav" aria-label="Navegación principal">
+    <a class="link link--muted" href="#trabajo">Proyectos</a>
+    <a class="link link--muted" href="#soluciones">Soluciones</a>
+    <a class="link link--muted" href="#equipo">Equipo</a>
+  </nav>
 
-    <div class="site-header__actions">
-      <button class="btn btn--sm btn--on-dark" type="button" data-action="explore">Explorar</button>
-      <a class="btn btn--sm btn--accent" href="#contacto">Hablemos</a>
-    </div>
+  <p class="topbar__aside tag" data-topbar-contact>
+    <a class="link" href="#contacto">Hablemos</a>
+  </p>
 
-    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir menú">
-      <span aria-hidden="true"></span>
-    </button>
-  </div>
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir menú">
+    <span aria-hidden="true"></span>
+  </button>
 </header>
 
 <div class="mobile-menu" id="menu-movil" hidden>
-  <a href="#trabajo" data-menu-link><span>Proyectos</span><span class="mobile-menu__num">01</span></a>
-  <a href="#soluciones" data-menu-link><span>Soluciones</span><span class="mobile-menu__num">02</span></a>
-  <a href="#equipo" data-menu-link><span>Equipo</span><span class="mobile-menu__num">03</span></a>
-  <a href="#contacto" data-menu-link><span>Hablemos</span><span class="mobile-menu__num">04</span></a>
-  <div class="mobile-menu__foot">
-    <button class="btn btn--on-dark" type="button" data-action="explore">Explorar la galería</button>
-  </div>
+  <a href="#trabajo" data-menu-link>Proyectos</a>
+  <a href="#soluciones" data-menu-link>Soluciones</a>
+  <a href="#equipo" data-menu-link>Equipo</a>
+  <a href="#contacto" data-menu-link>Hablemos</a>
+  <button class="action action--quiet" type="button" data-action="explore">Abrir la galería</button>
 </div>
 
 <main id="contenido">
 
   <!-- ── Escenario: galería 3D de proyectos ───────────────────────────── -->
-  <section class="stage grain" id="trabajo" data-stage aria-label="Proyectos de HAYAI">
+  <section class="stage" id="trabajo" data-stage aria-label="Proyectos de HAYAI">
     <div class="stage__sticky">
+
+      <!-- Lienzo a sangre: las láminas se abren en abanico sobre el papel -->
       <div class="stage__canvas" data-canvas-host></div>
 
       <div class="stage__fallback" data-stage-fallback>
         <img data-fallback-img src="./covers/guarowook.jpg" alt="" width="1080" height="1440" />
       </div>
 
-      <div class="stage__veil" aria-hidden="true"></div>
+      <!-- Logotipo gigante, bajo, con las láminas pasando por delante -->
+      <p class="stage__wordmark" aria-hidden="true">HAYAI</p>
 
-      <div class="stage__ui shell">
-        <div class="stage__intro" data-stage-intro>
-          <p class="eyebrow">Portafolio de software</p>
-          <h1 class="display stage__title">Software que hace avanzar tu negocio</h1>
-          <p class="lede">Diseñamos y desarrollamos herramientas para vender, gestionar y crecer.</p>
-          <div class="stage__cta">
-            <a class="btn btn--accent" href="#contacto">Hablemos de tu proyecto</a>
-            <button class="btn btn--on-dark" type="button" data-action="explore">Explorar proyectos</button>
+      <div class="stage__ui">
+
+        <!-- Columna izquierda: propuesta, acción y datos del proyecto activo -->
+        <div class="stage__rail">
+          <div class="stage__pitch" data-stage-intro>
+            <h1 class="display stage__title">Software que hace avanzar tu negocio</h1>
+            <p class="lede">Diseñamos y desarrollamos herramientas para vender, gestionar y crecer.</p>
+            <a class="action action--amber" href="#contacto">
+              Hablemos de tu proyecto<span class="glyph" aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <dl class="stage__facts" data-stage-meta>
+            <div>
+              <dt class="tag">Categoría</dt>
+              <dd data-swap data-meta-category>Sistema de Comandas</dd>
+            </div>
+            <div>
+              <dt class="tag">Qué resuelve</dt>
+              <dd data-swap data-meta-desc>Sistema de comandas y operación para restaurante.</dd>
+            </div>
+            <div class="stage__facts-actions">
+              <button class="link tag tag--ink" type="button" data-action="open-project">
+                <span>Ver caso</span><span aria-hidden="true"> ↗</span>
+              </button>
+              <button class="link tag" type="button" data-action="explore">Abrir galería</button>
+            </div>
+          </dl>
+
+          <div class="stage__index">
+            <p class="tag">Trabajo seleccionado</p>
+            <p class="stage__count">
+              <span class="num" data-counter-current>01</span><span class="num stage__count-total" data-counter-total>/06</span>
+            </p>
+            <div class="stage__steps">
+              <button class="tag" type="button" data-action="prev" aria-label="Proyecto anterior">← Ant</button>
+              <button class="tag" type="button" data-action="next" aria-label="Proyecto siguiente">Sig →</button>
+            </div>
           </div>
         </div>
 
-        <div class="stage__meta" data-stage-meta>
-          <p class="stage__meta-kicker">
-            <span class="num" data-swap data-meta-index>01</span>
-            <span data-swap data-meta-category>Sistema de Comandas</span>
-          </p>
-          <h2 class="display stage__meta-title" data-swap data-meta-title>GuaroWook</h2>
-          <p class="stage__meta-desc" data-swap data-meta-desc>Sistema de comandas y operación para restaurante.</p>
-          <div class="stage__meta-actions">
-            <button class="btn btn--sm btn--accent" type="button" data-action="open-project">
-              <span>Ver proyecto</span><span class="arrow" aria-hidden="true">↗</span>
-            </button>
-            <button class="btn btn--sm btn--on-dark" type="button" data-action="explore">Explorar</button>
-          </div>
-        </div>
-
-        <div class="stage__rail" aria-hidden="true">
-          <span class="num" data-counter-current>01</span>
-          <span class="stage__rail-track"><span class="stage__rail-thumb" data-rail-thumb></span></span>
-          <span class="num" data-counter-total>06</span>
-        </div>
-
-        <div class="stage__nav">
-          <button type="button" data-action="prev" aria-label="Proyecto anterior">←</button>
-          <button type="button" data-action="next" aria-label="Proyecto siguiente">→</button>
-        </div>
-
-        <p class="stage__hint" data-stage-hint>Desplázate</p>
+        <!-- Columna derecha: el portafolio entero, sincronizado con la escena.
+             El activo va nítido; el resto se atenúa y se desenfoca. -->
+        <nav class="stage__titles" data-title-list aria-label="Ir a un proyecto"></nav>
       </div>
 
       <div class="stage__empty" data-stage-empty hidden>
-        <p class="eyebrow">Categoría sin casos publicados</p>
         <h2 class="display" data-empty-title>Todavía no hemos publicado un caso aquí</h2>
-        <p>Pero podemos hacer que el primero sea el tuyo. Cuéntanos qué necesitas y lo estudiamos contigo.</p>
-        <a class="btn btn--accent" href="#contacto">Hablemos de tu proyecto</a>
+        <p class="lede">Pero podemos hacer que el primero sea el tuyo. Cuéntanos qué necesitas y lo estudiamos contigo.</p>
+        <a class="action action--amber" href="#contacto">Hablemos de tu proyecto<span class="glyph" aria-hidden="true">↗</span></a>
       </div>
     </div>
   </section>
@@ -160,21 +161,15 @@
   <!-- ── Soluciones y el índice de proyectos ──────────────────────────── -->
   <section class="section" id="soluciones" aria-labelledby="soluciones-titulo">
     <div class="shell">
-      <div class="section__head section__head--split">
-        <div data-reveal>
-          <p class="eyebrow">Soluciones</p>
-          <h2 class="display section__title" id="soluciones-titulo">¿Qué tipo de proyecto quieres implementar en tu negocio?</h2>
-        </div>
-        <p class="lede" data-reveal style="--reveal-delay:90ms">
-          Elige una categoría para filtrar la galería y ver los proyectos que ya hemos desarrollado.
-        </p>
-      </div>
+      <h2 class="display section__title" id="soluciones-titulo" data-reveal="mask">
+        <span class="mask-line">¿Qué tipo de proyecto quieres implementar en tu negocio?</span>
+      </h2>
 
       <div class="cats" data-cat-list role="group" aria-label="Categorías de proyecto"></div>
 
       <div class="index-head">
-        <h3 data-index-title>Todos los proyectos</h3>
-        <p class="num" data-index-count></p>
+        <h3 class="index-head__title" data-index-title>Todos los proyectos</h3>
+        <p class="tag num" data-index-count></p>
       </div>
 
       <div class="work-grid" data-work-grid></div>
@@ -183,13 +178,10 @@
   </section>
 
   <!-- ── Equipo ───────────────────────────────────────────────────────── -->
-  <section class="section section--tint" id="equipo" aria-labelledby="equipo-titulo">
+  <section class="section" id="equipo" aria-labelledby="equipo-titulo">
     <div class="shell">
-      <div class="section__head section__head--split">
-        <div data-reveal>
-          <p class="eyebrow">Quiénes somos</p>
-          <h2 class="display section__title" id="equipo-titulo">El equipo detrás de los proyectos</h2>
-        </div>
+      <div class="team-head">
+        <h2 class="display section__title" id="equipo-titulo" data-reveal="mask"><span class="mask-line">El equipo detrás de los proyectos</span></h2>
         <p class="lede" data-reveal style="--reveal-delay:90ms">
           Diseño, producto e ingeniería en un mismo equipo: pensamos el negocio, prototipamos y lo llevamos a producción.
         </p>
@@ -199,25 +191,25 @@
   </section>
 
   <!-- ── Contacto ─────────────────────────────────────────────────────── -->
-  <section class="section contact grain" id="contacto" aria-labelledby="contacto-titulo">
+  <section class="section section--contact" id="contacto" aria-labelledby="contacto-titulo">
     <div class="shell contact__grid">
       <div class="contact__intro" data-reveal>
-        <p class="eyebrow">Hablemos</p>
+        <p class="tag">Hablemos</p>
         <h2 class="display contact__title" id="contacto-titulo" data-form-title>¿Tienes un proyecto similar?</h2>
-        <p class="contact__lede">Cuéntanos qué necesitas. Respondemos con una propuesta concreta de alcance y siguiente paso.</p>
+        <p class="lede">Cuéntanos qué necesitas. Respondemos con una propuesta concreta de alcance y siguiente paso.</p>
         <div class="contact__direct" data-direct-channels></div>
       </div>
 
       <form class="form" data-lead-form novalidate>
         <div class="field">
-          <span id="tipos-label">Tipo de proyecto</span>
+          <span class="tag" id="tipos-label">Tipo de proyecto</span>
           <div class="chips" data-type-chips role="group" aria-labelledby="tipos-label"></div>
           <p class="field__error" data-error-for="types" role="status"></p>
         </div>
 
         <div class="form__row">
           <div class="field" data-field="phone">
-            <label for="lead-phone">Teléfono</label>
+            <label class="tag" for="lead-phone">Teléfono</label>
             <div class="phone-group">
               <select id="lead-dial" name="dial" aria-label="Código de país" data-dial></select>
               <input id="lead-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="412 000 0000" />
@@ -226,14 +218,14 @@
           </div>
 
           <div class="field" data-field="email">
-            <label for="lead-email">Correo</label>
+            <label class="tag" for="lead-email">Correo</label>
             <input id="lead-email" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" />
             <p class="field__error" data-error-for="email" role="status"></p>
           </div>
         </div>
 
         <div class="field" data-field="idea">
-          <label for="lead-idea">Tu idea</label>
+          <label class="tag" for="lead-idea">Tu idea</label>
           <textarea id="lead-idea" name="idea" placeholder="Cuéntanos brevemente qué quieres construir o mejorar…"></textarea>
           <p class="field__error" data-error-for="idea" role="status"></p>
         </div>
@@ -241,49 +233,47 @@
         <p class="form__status" data-form-status role="status" aria-live="polite"></p>
 
         <div class="form__submit">
-          <button class="btn btn--accent" type="submit" data-submit>
-            <span data-submit-label>Hablemos de tu proyecto</span><span class="arrow" aria-hidden="true">→</span>
+          <button class="action action--amber" type="submit" data-submit>
+            <span data-submit-label>Hablemos de tu proyecto</span><span class="glyph" aria-hidden="true">↗</span>
           </button>
-          <p class="form__note" data-form-note></p>
+          <p class="form__note tag" data-form-note></p>
         </div>
       </form>
     </div>
   </section>
 </main>
 
-<footer class="site-footer grain">
-  <div class="shell">
-    <p class="site-footer__word" aria-hidden="true">HAYAI</p>
-    <div class="site-footer__row">
-      <p>© <span data-year>2026</span> HAYAI</p>
-      <nav class="site-footer__links" aria-label="Pie de página">
-        <a href="#trabajo">Proyectos</a>
-        <a href="#soluciones">Soluciones</a>
-        <a href="#equipo">Equipo</a>
-        <a href="#contacto">Hablemos</a>
-      </nav>
-    </div>
+<footer class="site-footer">
+  <div class="shell site-footer__row">
+    <p class="tag">© <span data-year>2026</span> HAYAI</p>
+    <nav class="site-footer__links tag" aria-label="Pie de página">
+      <a class="link link--muted" href="#trabajo">Proyectos</a>
+      <a class="link link--muted" href="#soluciones">Soluciones</a>
+      <a class="link link--muted" href="#equipo">Equipo</a>
+      <a class="link link--muted" href="#contacto">Hablemos</a>
+    </nav>
   </div>
+  <p class="site-footer__word" aria-hidden="true">HAYAI</p>
 </footer>
 
 <!-- ── Visor de casos de estudio ───────────────────────────────────────── -->
 <div class="viewer" data-viewer role="dialog" aria-modal="true" aria-labelledby="viewer-titulo" hidden>
   <div class="viewer__bar">
-    <button class="btn btn--sm btn--on-dark" type="button" data-viewer-close>← Volver a proyectos</button>
-    <p class="viewer__label" id="viewer-titulo" data-viewer-label></p>
+    <button class="link tag tag--ink" type="button" data-viewer-close>← Volver a proyectos</button>
+    <p class="viewer__label tag" id="viewer-titulo" data-viewer-label></p>
     <div class="viewer__actions">
-      <button class="btn btn--sm btn--on-dark" type="button" data-viewer-prev aria-label="Proyecto anterior">←</button>
-      <button class="btn btn--sm btn--on-dark" type="button" data-viewer-next aria-label="Proyecto siguiente">→</button>
-      <a class="btn btn--sm btn--on-dark" data-viewer-open target="_blank" rel="noopener noreferrer">Abrir aparte ↗</a>
+      <button class="link tag" type="button" data-viewer-prev aria-label="Proyecto anterior">← Ant</button>
+      <button class="link tag" type="button" data-viewer-next aria-label="Proyecto siguiente">Sig →</button>
+      <a class="link tag tag--ink" data-viewer-open target="_blank" rel="noopener noreferrer">Abrir aparte ↗</a>
     </div>
   </div>
   <div class="viewer__stage" data-viewer-stage>
     <iframe class="viewer__frame" data-viewer-frame title="Caso de estudio" loading="lazy"></iframe>
     <div class="viewer__curtain" data-viewer-curtain>
-      <p class="viewer__curtain-title" data-viewer-curtain-title></p>
-      <p class="viewer__curtain-note" data-viewer-curtain-note>Cargando experiencia</p>
+      <p class="display viewer__curtain-title" data-viewer-curtain-title></p>
+      <p class="tag" data-viewer-curtain-note>Cargando experiencia</p>
       <div class="viewer__progress"><span></span></div>
-      <button class="btn btn--sm btn--accent viewer__retry" type="button" data-viewer-retry>Reintentar</button>
+      <button class="action action--amber viewer__retry" type="button" data-viewer-retry>Reintentar</button>
     </div>
   </div>
 </div>
@@ -293,29 +283,28 @@
   <div class="explore__canvas" data-explore-canvas-host></div>
   <div class="explore__ui">
     <div class="explore__top">
-      <p class="explore__title">Galería · recorrido circular</p>
-      <div class="explore__actions">
-        <button class="btn btn--sm btn--on-dark" type="button" data-explore-list>Ver como lista</button>
-        <button class="btn btn--sm btn--on-dark" type="button" data-explore-close aria-label="Cerrar galería">Cerrar ✕</button>
+      <p class="tag">Galería · recorrido circular</p>
+      <div class="explore__top-actions">
+        <button class="link tag" type="button" data-explore-list>Ver como lista</button>
+        <button class="link tag tag--ink" type="button" data-explore-close aria-label="Cerrar galería">Cerrar ✕</button>
       </div>
     </div>
     <div></div>
     <div class="explore__bottom">
       <div class="explore__meta">
-        <p class="explore__meta-kicker">
+        <p class="tag">
           <span class="num" data-explore-index>01</span>
+          <span data-explore-count></span>
           <span data-explore-category></span>
-          <span class="num" data-explore-count></span>
         </p>
-        <p class="explore__meta-title" data-explore-title></p>
-        <p class="explore__meta-desc" data-explore-desc></p>
+        <p class="display explore__meta-title" data-explore-title></p>
+        <p class="lede" data-explore-desc></p>
       </div>
       <div class="explore__actions">
         <div class="explore__dots" data-explore-dots role="group" aria-label="Ir a un proyecto"></div>
-        <button class="btn btn--sm btn--on-dark" type="button" data-explore-prev aria-label="Proyecto anterior">←</button>
-        <button class="btn btn--sm btn--on-dark" type="button" data-explore-next aria-label="Proyecto siguiente">→</button>
-        <button class="btn btn--sm btn--accent" type="button" data-explore-open>Ver proyecto ↗</button>
-        <a class="btn btn--sm btn--on-dark" href="#contacto" data-explore-contact>Hablemos</a>
+        <button class="link tag" type="button" data-explore-prev aria-label="Proyecto anterior">← Ant</button>
+        <button class="link tag" type="button" data-explore-next aria-label="Proyecto siguiente">Sig →</button>
+        <button class="action action--amber" type="button" data-explore-open>Ver caso<span class="glyph" aria-hidden="true">↗</span></button>
       </div>
     </div>
   </div>
@@ -325,12 +314,12 @@
   <div class="shell" style="padding-block:120px 60px">
     <h2 class="display" style="font-size:32px;margin-bottom:16px">Proyectos de HAYAI</h2>
     <ul style="display:grid;gap:10px">
-      <li><a class="link-underline" href="./projects/guarowook.html">GuaroWook — Sistema de comandas</a></li>
-      <li><a class="link-underline" href="./projects/coffee-cake.html">Coffee &amp; Cake — Comandas para cafetería</a></li>
-      <li><a class="link-underline" href="./projects/brasa.html">BRASA — Comandas para restaurante</a></li>
-      <li><a class="link-underline" href="./projects/changan-360.html">Changan 360° — Concesionario virtual</a></li>
-      <li><a class="link-underline" href="./projects/jac-360.html">JAC 360° — Concesionario virtual</a></li>
-      <li><a class="link-underline" href="./projects/rents-brooklyn-queens.html">Rents Brooklyn Queens — Hotelería y reservas</a></li>
+      <li><a class="link" href="./projects/guarowook.html">GuaroWook, sistema de comandas</a></li>
+      <li><a class="link" href="./projects/coffee-cake.html">Coffee &amp; Cake, comandas para cafetería</a></li>
+      <li><a class="link" href="./projects/brasa.html">BRASA, comandas para restaurante</a></li>
+      <li><a class="link" href="./projects/changan-360.html">Changan 360°, concesionario virtual</a></li>
+      <li><a class="link" href="./projects/jac-360.html">JAC 360°, concesionario virtual</a></li>
+      <li><a class="link" href="./projects/rents-brooklyn-queens.html">Rents Brooklyn Queens, hotelería y reservas</a></li>
     </ul>
   </div>
 </noscript>

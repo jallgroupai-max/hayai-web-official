@@ -83,10 +83,16 @@ for (const vp of VIEWPORTS) {
   }
 
   // Recorrido: bajar y comprobar que cambia el proyecto activo.
-  const firstTitle = await page.textContent('[data-meta-title]');
+  const activeTitle = () =>
+    page.evaluate(() => {
+      const current = document.querySelector('.stage__title-item[aria-current="true"] .stage__title-name');
+      if (current) return current.textContent.trim();
+      return (document.querySelector('[data-meta-category]') || {}).textContent || '';
+    });
+  const firstTitle = await activeTitle();
   await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2.2));
   await page.waitForTimeout(1600);
-  const secondTitle = await page.textContent('[data-meta-title]');
+  const secondTitle = await activeTitle();
   const counter = await page.textContent('[data-counter-current]');
 
   if (vp.width >= 900) {
@@ -151,7 +157,7 @@ for (const vp of VIEWPORTS) {
   // Modo Explorar.
   await page.evaluate(() => window.scrollTo(0, 0));
   await page.waitForTimeout(600);
-  await page.locator('.site-header [data-action="explore"]').click();
+  await page.locator('.stage__facts-actions [data-action="explore"]').click();
   await page.waitForTimeout(1200);
   const exploreOpen = await page.locator('[data-explore]').isVisible();
   const exploreHash = await page.evaluate(() => location.hash);

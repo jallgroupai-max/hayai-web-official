@@ -285,7 +285,7 @@ export function initContact() {
       return;
     }
 
-    const subject = `Nuevo proyecto — ${data.types.join(', ')}`;
+    const subject = `Nuevo proyecto: ${data.types.join(', ')}`;
     const mailto = `mailto:${cfg.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
     setStatus('ok', [

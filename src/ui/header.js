@@ -1,40 +1,20 @@
 /**
- * Cabecera: contraste según la superficie que tiene debajo, menú móvil y
- * navegación por anclas con el mismo suavizado que el resto del sitio.
+ * Tira superior: menú móvil y navegación por anclas con el mismo suavizado que
+ * el resto del sitio.
+ *
+ * No hay conmutación de contraste porque no hace falta: la página entera va
+ * sobre el mismo papel, de la cabecera al pie.
  */
 import { $, $$, trapFocus, focusFirst } from '../dom.js';
-import { ScrollTrigger, scrollTo, lockScroll, prefersReducedMotion } from '../motion.js';
-
-/** Secciones oscuras: sobre ellas la cabecera va en claro. */
-const DARK_SECTIONS = ['#trabajo', '#contacto', '.site-footer'];
+import { scrollTo, lockScroll, prefersReducedMotion } from '../motion.js';
 
 export function initHeader() {
-  const header = $('.site-header');
+  const topbar = $('[data-topbar]');
   const toggle = $('.menu-toggle');
   const menu = $('#menu-movil');
-  if (!header) return;
+  if (!topbar) return;
 
-  /* ── Contraste ─────────────────────────────────────────────────────── */
-  let darkCount = 0;
-  const apply = () => header.setAttribute('data-theme', darkCount > 0 ? 'dark' : 'light');
-  apply();
-
-  const headerH = () => header.offsetHeight || 68;
-
-  for (const selector of DARK_SECTIONS) {
-    const section = $(selector);
-    if (!section) continue;
-    ScrollTrigger.create({
-      trigger: section,
-      start: () => `top ${headerH() - 1}px`,
-      end: () => `bottom ${headerH() - 1}px`,
-      onToggle: (self) => {
-        darkCount += self.isActive ? 1 : -1;
-        darkCount = Math.max(0, darkCount);
-        apply();
-      }
-    });
-  }
+  const barHeight = () => topbar.offsetHeight || 56;
 
   /* ── Menú móvil ────────────────────────────────────────────────────── */
   let releaseTrap = null;
@@ -76,7 +56,7 @@ export function initHeader() {
     if (menu && !menu.hidden) setMenu(false);
     history.pushState({ hayai: true }, '', hash === '#top' ? location.pathname + location.search : hash);
     scrollTo(target, {
-      offset: -headerH(),
+      offset: -barHeight(),
       duration: prefersReducedMotion() ? 0 : 1.1
     });
     // El foco acompaña al salto para no perder el hilo con teclado.

@@ -112,13 +112,29 @@ src/
     scene.js          Escena Three.js, reciclado de mallas y selección por GPU
     controller.js     Rueda, trackpad, arrastre e inercia normalizados
   ui/
-    header.js  stage.js  solutions.js  team.js  contact.js  viewer.js  explore.js  reveal.js
+    header.js  stage.js  solutions.js  team.js  contact.js  viewer.js  explore.js
+    reveal.js  parallax.js
 vendor/               Bundles ESM de three, gsap y lenis (generados, no editar)
 covers/               Portadas capturadas de cada caso
 tools/                Autoría: vendorizado, portadas y comprobaciones en navegador
 ```
 
-### Decisiones que conviene conocer
+### Decisiones de diseño
+
+- **Un solo tema.** La página entera va sobre piedra clara (`#E9E6E0`), de la
+  cabecera al pie. Ninguna sección se invierte a oscuro a mitad de recorrido.
+- **Un solo radio: 0.** Nada redondeado. Ni botones, ni láminas, ni campos.
+- **La jerarquía la hacen la opacidad y el desenfoque**, no las cajas. Casi no
+  hay bordes ni sombras en todo el sitio.
+- **El acento va en dos pesos.** El ámbar de marca `#EF9D25` sólo mide 1,77:1
+  contra el papel: sirve como relleno (con tinta encima llega a 8,4:1) pero
+  nunca como texto ni como filete. Para eso está `--amber-ink` `#8F4A05`,
+  5,35:1. Los escalones de tinta pensados para texto pasan AA; los dos últimos
+  son sólo filetes.
+- **Tipografía en dos registros.** Archivo para todo lo que se lee, IBM Plex
+  Mono para las etiquetas diminutas ancladas a los bordes.
+
+### Decisiones técnicas
 
 - **Un solo ciclo de animación.** `gsap.ticker` alimenta a Lenis, a ScrollTrigger
   y a la escena. No hay ningún `requestAnimationFrame` adicional, así que la
@@ -133,6 +149,16 @@ tools/                Autoría: vendorizado, portadas y comprobaciones en navega
 - **Selección por GPU.** El shader de selección comparte vértice con el de
   pintado, así que la zona que se puede pulsar arrastra la misma curvatura que
   se ve, también cerca de los bordes.
+- **El abanico es diagonal y cizallado.** Cada lámina es un paralelogramo
+  (cizalla constante en el vertex shader) y el recorrido sube hacia la derecha
+  con solape fuerte. Es lo que separa un abanico de un carrusel de tarjetas.
+- **La escena siempre gira en círculo, aunque el recorrido sea finito.** El
+  scroll recorre 0..n-1; sólo el dibujado envuelve, para que el abanico se vea
+  lleno también en el primer y el último proyecto.
+- **El recorte de las máscaras de texto va en un hijo, nunca en el elemento
+  observado.** IntersectionObserver tiene en cuenta el `clip-path` del propio
+  objetivo: un titular recortado al 100 % nunca se considera visible y nunca se
+  revelaría. De ahí el `<span class="mask-line">`.
 - **`vendor/` se regenera**, no se edita a mano: `cd tools && node vendor.mjs`.
   Las versiones exactas quedan en `vendor/VENDOR.json`.
 

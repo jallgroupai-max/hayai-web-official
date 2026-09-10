@@ -1,6 +1,7 @@
 /** Equipo: perfiles reales publicados, cada uno con su enlace externo. */
-import { $, el, arrow } from '../dom.js';
+import { $, el } from '../dom.js';
 import { TEAM } from '../data.js';
+import { initParallax } from './parallax.js';
 
 export function initTeam() {
   const grid = $('[data-team-grid]');
@@ -15,11 +16,10 @@ export function initTeam() {
           href: member.url,
           target: '_blank',
           rel: 'noopener noreferrer',
-          'data-reveal': '',
-          style: { '--member-accent': member.accent }
+          'data-reveal': ''
         },
         [
-          el('span', { class: 'member__photo' }, [
+          el('span', { class: 'member__photo', 'data-parallax': '' }, [
             el('img', {
               src: member.photo,
               alt: member.name,
@@ -30,12 +30,14 @@ export function initTeam() {
             })
           ]),
           el('span', {}, [
-            el('span', { class: 'member__name', text: member.name, style: { display: 'block' } }),
-            el('span', { class: 'member__role', text: member.role, style: { display: 'block' } }),
-            el('span', { class: 'member__net' }, [document.createTextNode(member.network), arrow('↗')])
+            el('span', { class: 'member__name', text: member.name }),
+            el('span', { class: 'member__role', text: member.role }),
+            el('span', { class: 'member__net tag', text: `${member.network} ↗` })
           ])
         ]
       )
     )
   );
+
+  initParallax(grid);
 }

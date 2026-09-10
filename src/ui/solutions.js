@@ -5,10 +5,11 @@
  * como listado navegable, como resultado del filtro y como alternativa cuando
  * la galería WebGL no puede dibujarse.
  */
-import { $, el, pad2, arrow } from '../dom.js';
+import { $, el, pad2 } from '../dom.js';
 import { CATEGORIES, projectsOf, categoryById } from '../data.js';
 import { getState, setState, currentList, subscribe } from '../store.js';
 import { initReveal } from './reveal.js';
+import { initParallax, clearParallax } from './parallax.js';
 
 export function initSolutions({ onOpenProject, onFilterChange }) {
   const listHost = $('[data-cat-list]');
@@ -27,19 +28,18 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
         class: 'cat',
         type: 'button',
         'aria-pressed': 'false',
-        'data-cat': category.id,
-        style: { '--cat-accent': category.accent }
+        'data-cat': category.id
       },
       [
-        el('span', { class: 'cat__num num', text: pad2(i + 1) }),
+        el('span', { class: 'cat__num', text: pad2(i + 1) }),
         el('span', { class: 'cat__body' }, [
           el('span', { class: 'cat__title', text: category.title }),
           el('span', { class: 'cat__desc', text: category.description })
         ]),
-        el('span', { class: 'cat__meta' }, [
-          el('span', { text: count === 0 ? 'Sin casos aún' : count === 1 ? '1 proyecto' : `${count} proyectos` }),
-          el('span', { class: 'cat__disc', 'aria-hidden': 'true' }, [document.createTextNode('↗')])
-        ])
+        el('span', {
+          class: 'cat__meta',
+          text: count === 0 ? 'Sin casos' : count === 1 ? '1 proyecto' : `${count} proyectos`
+        })
       ]
     );
 
@@ -69,25 +69,20 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
         'aria-disabled': openable ? null : 'true'
       },
       [
-        el('span', { class: 'work-card__shot' }, [
+        el('span', { class: 'work-card__shot', 'data-parallax': '' }, [
           el('img', {
             src: project.cover,
             alt: `Portada del proyecto ${project.title}`,
             width: 1080,
             height: 1440,
-            loading: index < 3 ? 'eager' : 'lazy',
+            loading: index < 2 ? 'eager' : 'lazy',
             decoding: 'async'
-          }),
-          el('span', { class: 'work-card__badge', text: category ? category.short : project.type })
+          })
         ]),
         el('span', { class: 'work-card__body' }, [
-          el('span', { class: 'work-card__type', text: project.type }),
           el('span', { class: 'work-card__title', text: project.title }),
-          el('span', { class: 'work-card__desc', text: project.description }),
-          el('span', { class: 'work-card__cta' }, [
-            document.createTextNode(openable ? 'Ver proyecto' : 'Próximamente'),
-            openable ? arrow('↗') : null
-          ])
+          el('span', { class: 'work-card__cta', text: openable ? 'Ver caso ↗' : 'Próximamente' }),
+          el('span', { class: 'work-card__type', text: category ? category.title : project.type })
         ])
       ]
     );
@@ -98,14 +93,14 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
 
   function emptyInvite(category) {
     return el('div', { class: 'work-empty' }, [
-      el('p', { class: 'eyebrow', text: 'Sin casos publicados' }),
       el('h4', { text: `Todavía no hemos publicado un caso de ${category.title}.` }),
       el('p', {
+        class: 'lede',
         text: 'Podemos hacer que el primero sea el tuyo: cuéntanos qué necesitas y te decimos cómo lo abordaríamos.'
       }),
-      el('a', { class: 'btn btn--accent', href: '#contacto' }, [
+      el('a', { class: 'action action--amber', href: '#contacto' }, [
         document.createTextNode('Hablemos de tu proyecto'),
-        arrow('→')
+        el('span', { class: 'glyph', 'aria-hidden': 'true', text: '↗' })
       ])
     ]);
   }
@@ -134,6 +129,10 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
     }
 
     initReveal(grid);
+    // La rejilla se reconstruye entera al filtrar: los disparadores viejos
+    // apuntan a nodos que ya no existen.
+    clearParallax();
+    initParallax(grid);
   }
 
   renderGrid();

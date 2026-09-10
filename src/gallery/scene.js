@@ -31,34 +31,46 @@ import {
 import { PLANE_ASPECT, SHEET_VERTEX, SHEET_FRAGMENT, PICK_FRAGMENT } from './shaders.js';
 import { clamp, damp } from '../dom.js';
 
-const MAX_SLOTS = 7;
-const SPACING = 1.17; // separación entre láminas, en anchos de lámina
-const DEPTH = 0.62;   // escalonado en profundidad, en anchos de lámina
-const CORNER_RADIUS = 0.018;
+const MAX_SLOTS = 9;
 
-/** Número impar de mallas visibles para que la activa quede centrada. */
+/* Geometria del abanico, en anchos de lamina.
+   El eje del recorrido es DIAGONAL: al avanzar, las piezas suben hacia la
+   derecha y salen de cuadro; las anteriores bajan hacia la izquierda y cruzan
+   por delante del logotipo. El solape es fuerte a proposito (STEP_X < 1), que
+   es lo que convierte la fila en un abanico. */
+const STEP_X = 0.54;
+const STEP_Y = 0.31;
+const DEPTH = 0.30;
+const ROLL = 0.045;        // giro en Z: papel lanzado, no tarjeta alineada
+const SHEAR = 0.15;        // cizalla constante de cada lamina
+const CORNER_RADIUS = 0;   // la pagina no redondea nada
+
+/** Numero impar de mallas visibles para que la activa quede centrada. */
 function slotCountFor(total) {
   if (total <= 1) return 1;
-  if (total === 2) return 3;
-  const odd = total % 2 === 0 ? total - 1 : total;
-  return Math.min(odd, MAX_SLOTS);
+  if (total <= 3) return 3;
+  // Con 4 o mas siempre 7: las de los extremos se apagan del todo antes de
+  // llegar a repetirse, asi que el abanico se ve lleno sin duplicados visibles.
+  return Math.min(7, MAX_SLOTS);
 }
 
 const mod = (n, m) => ((n % m) + m) % m;
 
-/** Colocación de una lámina según su distancia con signo al centro. */
+/** Colocacion de una lamina segun su distancia con signo al centro. */
 function layoutFor(offset) {
   const abs = Math.abs(offset);
   const dir = Math.sign(offset);
-  // Separación central: la activa se despega del resto del grupo.
-  const gap = dir * MathUtils.smoothstep(Math.min(abs, 1), 0, 1) * 0.1;
+  // Separacion central: la activa se despega del resto del grupo.
+  const gap = dir * MathUtils.smoothstep(Math.min(abs, 1), 0, 1) * 0.09;
   return {
-    x: offset * SPACING + gap,
-    y: -abs * 0.018,
+    x: offset * STEP_X + gap,
+    y: offset * STEP_Y,
     z: -Math.min(abs, 3.4) * DEPTH,
-    rotY: clamp(-offset * 0.3, -0.78, 0.78),
-    scale: 1 - Math.min(abs, 3.4) * 0.055,
-    opacity: 1 - MathUtils.smoothstep(Math.min(abs, 4), 1.9, 3.1)
+    rotY: clamp(-offset * 0.16, -0.5, 0.5),
+    rotZ: clamp(-offset * ROLL, -0.2, 0.2),
+    scale: 1 - Math.min(abs, 3.4) * 0.05,
+    // Se apaga del todo en |offset| 2.9, antes de que el ciclo repita textura.
+    opacity: 1 - MathUtils.smoothstep(Math.min(abs, 4), 1.75, 2.9)
   };
 }
 
@@ -68,7 +80,9 @@ export class Gallery {
     this.hooks = hooks;
 
     this.renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
-    this.renderer.setClearColor(new Color('#16110b'), 0);
+    // Fondo transparente: el papel de la pagina se ve a traves del lienzo y el
+    // logotipo gigante queda detras de las laminas.
+    this.renderer.setClearColor(new Color('#e9e6e0'), 0);
     this.canvas = this.renderer.domElement;
     this.canvas.setAttribute('aria-hidden', 'true');
 
@@ -102,6 +116,7 @@ export class Gallery {
     this.fitRatio = 0.62;   // alto de la lamina respecto al alto visible
     this.widthRatio = 0.62; // tope de ancho respecto al ancho visible
     this.offsetRatio = 0;
+    this.offsetYRatio = 0;
     this.size = { w: 1, h: 1 };
     this.dpr = 1;
     this.needsRender = true;
@@ -128,6 +143,8 @@ export class Gallery {
         uImageAspect: { value: PLANE_ASPECT },
         uPlaneAspect: { value: PLANE_ASPECT },
         uBend: { value: 0 },
+        uShear: { value: SHEAR },
+        uPaper: { value: new Color('#e9e6e0') },
         uOffset: { value: 0 },
         uFocus: { value: 0 },
         uHover: { value: 0 },
@@ -243,11 +260,15 @@ export class Gallery {
     this.resize();
   }
 
-  /** @param {{ fitRatio?: number, widthRatio?: number, offsetRatio?: number }} opts */
-  configure({ fitRatio, widthRatio, offsetRatio } = {}) {
+  /**
+   * @param {{ fitRatio?: number, widthRatio?: number, offsetRatio?: number,
+   *           offsetYRatio?: number }} opts
+   */
+  configure({ fitRatio, widthRatio, offsetRatio, offsetYRatio } = {}) {
     if (fitRatio != null) this.fitRatio = fitRatio;
     if (widthRatio != null) this.widthRatio = widthRatio;
     if (offsetRatio != null) this.offsetRatio = offsetRatio;
+    if (offsetYRatio != null) this.offsetYRatio = offsetYRatio;
     this.resize();
   }
 
@@ -277,6 +298,7 @@ export class Gallery {
     if (this.planeWidth > maxWidth) this.planeWidth = maxWidth;
 
     this.group.position.x = visibleW * this.offsetRatio;
+    this.group.position.y = visibleH * this.offsetYRatio;
     this.needsRender = true;
   }
 
@@ -370,7 +392,8 @@ export class Gallery {
 
       mesh.position.set(l.x * width, l.y * width, l.z * width);
       mesh.rotation.y = l.rotY;
-      mesh.scale.setScalar(width);
+      mesh.rotation.z = l.rotZ;
+      mesh.scale.setScalar(width * l.scale);
       // De atrás hacia delante: las transparencias se apilan en orden.
       mesh.renderOrder = 100 - Math.round(Math.abs(offset) * 10);
 
@@ -420,7 +443,7 @@ export class Gallery {
     this.renderer.readRenderTargetPixels(this.pickTarget, 0, 0, 1, 1, this.pickBuffer);
     this.renderer.setRenderTarget(null);
     this.camera.clearViewOffset();
-    this.renderer.setClearColor(0x16110b, 0);
+    this.renderer.setClearColor(0xe9e6e0, 0);
 
     for (const mesh of this.slots) mesh.material = mesh.userData.material;
     this.needsRender = true;
