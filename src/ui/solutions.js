@@ -76,7 +76,7 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
             alt: `Portada del proyecto ${project.title}`,
             width: 1080,
             height: 1440,
-            loading: index < 2 ? 'eager' : 'lazy',
+            loading: 'lazy',
             decoding: 'async'
           })
         ]),

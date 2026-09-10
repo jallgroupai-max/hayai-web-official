@@ -149,6 +149,102 @@
   z-index: 1;
 }
 
+/* ── Piezas de interfaz flotantes ─────────────────────────────────────────
+   Rodean la portada, que va centrada. No interceptan el puntero: la lámina se
+   sigue pudiendo arrastrar y pulsar por debajo. Su opacidad la escribe el
+   recorrido, así que entran y salen exactamente con el scroll. */
+.stage__components {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ui-piece {
+  position: absolute;
+  background: var(--paper-lift);
+  color: var(--ink);
+  padding: 12px 14px;
+  min-width: 148px;
+  box-shadow: 0 18px 40px -26px rgba(23, 19, 15, 0.55);
+  opacity: var(--settle, 1);
+  transition: opacity 120ms linear;
+  animation: flotar 7s ease-in-out infinite;
+}
+
+.ui-piece:nth-child(1) { left: 24%; top: 21%; animation-duration: 7.5s; }
+.ui-piece:nth-child(2) { right: 19%; top: 45%; animation-duration: 6.2s; animation-delay: -2.4s; }
+.ui-piece:nth-child(3) { left: 29%; bottom: 19%; animation-duration: 8.1s; animation-delay: -4.1s; }
+
+@keyframes flotar {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -12px, 0); }
+}
+
+.ui-piece__label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.ui-piece__value {
+  display: block;
+  font-family: var(--grotesk);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.ui-piece--stat { min-width: 132px; }
+.ui-piece--stat .ui-piece__value { font-size: clamp(24px, 2.2vw, 36px); margin-bottom: 5px; }
+
+.ui-piece--row .ui-piece__line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 5px;
+}
+
+.ui-piece__title {
+  font-family: var(--grotesk);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+}
+
+.ui-piece__trailing {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--ink-soft);
+  white-space: nowrap;
+}
+
+.ui-piece--action .ui-piece__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.ui-piece--action .ui-piece__value { font-size: 18px; }
+
+.ui-piece__btn {
+  display: block;
+  margin-top: 10px;
+  padding: 7px 12px;
+  background: var(--amber);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
 .stage__canvas canvas {
   width: 100%;
   height: 100%;
@@ -427,6 +523,15 @@ html[data-gallery="fallback"] .stage__wordmark { display: none; }
   letter-spacing: -0.02em;
 }
 
+/* El índice con portadas queda oculto en el recorrido normal: la galería ya
+   enseña los proyectos y repetirlos debajo de las categorías sobra. No se
+   elimina porque es la alternativa cuando no hay WebGL, y ahí sí aparece.
+
+   La regla se ata al atributo, no al orden del archivo: así gana en
+   especificidad a la definición de .work-grid venga donde venga. */
+html:not([data-gallery="fallback"]) .index-head,
+html:not([data-gallery="fallback"]) .work-grid { display: none; }
+
 /* Rejilla con ritmo: dos columnas desfasadas y proporciones alternas, no
    tres tarjetas idénticas en fila. */
 .work-grid {
@@ -537,8 +642,11 @@ html[data-gallery="fallback"] .stage__wordmark { display: none; }
 .team-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(16px, 2.4vw, 40px);
+  gap: clamp(12px, 1.6vw, 26px);
   margin-top: clamp(38px, 6vh, 80px);
+  /* Fichas a la mitad de ancho. Se estrecha la rejilla en vez de tocar las
+     proporciones de las fotos, así el retrato conserva su encuadre. */
+  max-width: min(54%, 640px);
 }
 
 .member { display: grid; gap: 12px; align-content: start; }
@@ -861,7 +969,7 @@ html[data-gallery="fallback"] .stage__wordmark { display: none; }
   .work-card:nth-child(3n + 2) .work-card__shot,
   .work-card:nth-child(3n) .work-card__shot { aspect-ratio: 4 / 5; max-height: none; }
 
-  .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; }
 
   .viewer__bar { padding: 10px var(--edge); }
   .viewer__label { display: none; }
@@ -891,6 +999,7 @@ html[data-gallery="fallback"] .stage__wordmark { display: none; }
   }
 
   .stage__ui { display: contents; }
+  .stage__components { display: none; }
 
   .stage__rail {
     display: contents;

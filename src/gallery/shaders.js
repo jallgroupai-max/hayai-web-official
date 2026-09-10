@@ -6,9 +6,6 @@
  * ancho de la lámina y todas las deformaciones se expresan como fracción suya.
  *
  * Dos rasgos definen la forma:
- *  · Cizalla constante. Cada lámina es un paralelogramo, no un rectángulo: el
- *    borde superior va desplazado respecto al inferior. Es lo que hace que el
- *    abanico se lea como papel lanzado y no como un carrusel de tarjetas.
  *  · Flexión ligada a la velocidad. El centro se queda quieto y los bordes
  *    viajan, así el proyecto sigue siendo reconocible por rápido que se avance.
  *
@@ -77,10 +74,6 @@ export const SHEET_FRAGMENT = /* glsl */ `
   precision highp float;
 
   uniform sampler2D uMap;
-  // Sub-rectángulo de la textura que dibuja esta malla, en UV [x, y, ancho, alto].
-  // (0,0,1,1) es la portada entera; cualquier otro valor recorta un componente
-  // suelto de esa misma imagen, sin cargar una textura aparte.
-  uniform vec4 uCrop;
   uniform vec3 uPaper;       // color del papel: hacia ahí se retiran las piezas
   uniform float uImageAspect;
   uniform float uPlaneAspect;
@@ -108,8 +101,8 @@ export const SHEET_FRAGMENT = /* glsl */ `
     if (mask <= 0.002) discard;
 
     float zoom = 1.0 - 0.045 * uFocus - 0.02 * uHover;
-    vec2 base = clamp(coverUv(vUv, uImageAspect, uPlaneAspect, zoom), 0.0015, 0.9985);
-    vec3 col = texture2D(uMap, uCrop.xy + base * uCrop.zw).rgb;
+    vec2 uv = clamp(coverUv(vUv, uImageAspect, uPlaneAspect, zoom), 0.0015, 0.9985);
+    vec3 col = texture2D(uMap, uv).rgb;
 
     // Sobre papel claro la profundidad no se hace apagando a negro: las piezas
     // que no mandan se retiran HACIA el papel, como si se alejaran en la página.

@@ -1,10 +1,10 @@
 /**
- * Galería WebGL: láminas 3D con las portadas reales de HAYAI.
+ * Galería WebGL: la portada del proyecto activo, en 3D.
  *
- * Recursos acotados: una sola geometría, un número fijo de mallas (5 en un
- * portafolio de 6 proyectos) y una textura por proyecto. El índice lógico avanza
- * y da la vuelta sin que crezca nada: cada malla se reasigna a la posición que
- * le toca. El renderer y el lienzo son únicos y viajan entre el escenario y el
+ * Se ve UN proyecto a la vez, centrado y grande. El cambio es un fundido
+ * cruzado en el sitio, no un desplazamiento: por eso bastan tres mallas (la
+ * activa y sus dos vecinas) y una textura por proyecto. El índice lógico avanza
+ * y da la vuelta sin que crezca nada: cada malla se reasigna a la que le toca. El renderer y el lienzo son únicos y viajan entre el escenario y el
  * modo Explorar, así que abrir la galería inmersiva no duplica memoria de GPU.
  */
 import {
@@ -33,36 +33,18 @@ import { clamp, damp } from '../dom.js';
 
 const MAX_SLOTS = 9;
 
-/* Geometria del abanico, en anchos de lamina.
-   El eje del recorrido es DIAGONAL: al avanzar, las piezas suben hacia la
-   derecha y salen de cuadro; las anteriores bajan hacia la izquierda y cruzan
-   por delante del logotipo. El solape es fuerte a proposito (STEP_X < 1), que
-   es lo que convierte la fila en un abanico. */
-const STEP_X = 0.54;
-const STEP_Y = 0.31;
-const DEPTH = 0.30;
-const ROLL = 0.045;        // giro en Z: papel lanzado, no tarjeta alineada
-const SHEAR = 0.15;        // cizalla constante de cada lamina
+/* La galeria muestra UN proyecto a la vez, centrado. El cambio no es un
+   desplazamiento lateral sino un fundido cruzado: la pieza que sale se apaga
+   mientras la que entra aparece, las dos en el mismo sitio. Por eso aqui no hay
+   separacion horizontal; solo un pelin de profundidad y de escala para que el
+   cruce tenga cuerpo. */
+const DEPTH = 0.06;
+const SHEAR = 0;           // sin cizalla: la portada va recta y alineada
 const CORNER_RADIUS = 0;   // la pagina no redondea nada
 
-/* Componentes sueltos que flotan alrededor de la lamina activa. Se dibujan con
-   la MISMA textura del proyecto recortada por UV, asi que no hay ni una textura
-   ni una geometria de mas. Cada entrada dice donde se coloca respecto al centro
-   de la lamina (en anchos de lamina), su tamano y su desfase de flotacion. */
-const FRAGMENT_SLOTS = 3;
-const FRAGMENT_LAYOUT = [
-  { x: -0.96, y: 0.54, z: 0.32, size: 0.52, phase: 0.0, spin: -0.05 },
-  { x: 0.94, y: -0.28, z: 0.38, size: 0.44, phase: 2.1, spin: 0.06 },
-  { x: -0.80, y: -0.66, z: 0.28, size: 0.38, phase: 4.0, spin: 0.03 }
-];
-
-/** Numero impar de mallas visibles para que la activa quede centrada. */
+/** Basta con la activa y sus dos vecinas para resolver el cruce. */
 function slotCountFor(total) {
-  if (total <= 1) return 1;
-  if (total <= 3) return 3;
-  // Con 4 o mas siempre 7: las de los extremos se apagan del todo antes de
-  // llegar a repetirse, asi que el abanico se ve lleno sin duplicados visibles.
-  return Math.min(7, MAX_SLOTS);
+  return total <= 1 ? 1 : 3;
 }
 
 const mod = (n, m) => ((n % m) + m) % m;
@@ -70,25 +52,27 @@ const mod = (n, m) => ((n % m) + m) % m;
 /** Colocacion de una lamina segun su distancia con signo al centro. */
 function layoutFor(offset) {
   const abs = Math.abs(offset);
-  const dir = Math.sign(offset);
-  // Separacion central: la activa se despega del resto del grupo.
-  const gap = dir * MathUtils.smoothstep(Math.min(abs, 1), 0, 1) * 0.09;
   return {
-    x: offset * STEP_X + gap,
-    y: offset * STEP_Y,
-    z: -Math.min(abs, 3.4) * DEPTH,
-    rotY: clamp(-offset * 0.16, -0.5, 0.5),
-    rotZ: clamp(-offset * ROLL, -0.2, 0.2),
-    scale: 1 - Math.min(abs, 3.4) * 0.05,
-    // Se apaga del todo en |offset| 2.9, antes de que el ciclo repita textura.
-    opacity: 1 - MathUtils.smoothstep(Math.min(abs, 4), 1.75, 2.9)
+    x: 0,
+    y: 0,
+    z: -abs * DEPTH,
+    rotY: 0,
+    rotZ: 0,
+    // La entrante llega un pelin mas pequena y crece hasta su sitio.
+    scale: 1 - Math.min(abs, 1) * 0.05,
+    // Fundido: a media transicion las dos estan al 50 %.
+    opacity: 1 - MathUtils.smoothstep(Math.min(abs, 1.2), 0, 1)
   };
 }
 
 export class Gallery {
-  /** @param {{ onContextLost?: () => void }} [hooks] */
+  /** @param {{ onContextLost?: () => void, calm?: boolean }} [hooks] */
   constructor(hooks = {}) {
     this.hooks = hooks;
+    /* Movimiento reducido: la galería se dibuja igual, pero nada se mueve solo.
+       Fuera flotación, fuera flexión por velocidad y fuera reacción al puntero;
+       es decir, todo lo que se mueve sin que el usuario lo haya pedido. */
+    this.calm = !!hooks.calm;
 
     this.renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
     // Fondo transparente: el papel de la pagina se ve a traves del lienzo y el
@@ -152,8 +136,6 @@ export class Gallery {
     for (let i = 0; i < MAX_SLOTS; i++) {
       const uniforms = {
         uMap: { value: null },
-        // vec4 como array plano: three lo envia con uniform4fv sin necesitar Vector4.
-        uCrop: { value: [0, 0, 1, 1] },
         uImageAspect: { value: PLANE_ASPECT },
         uPlaneAspect: { value: PLANE_ASPECT },
         uBend: { value: 0 },
@@ -198,48 +180,6 @@ export class Gallery {
       this.slots.push(mesh);
     }
 
-    this.buildFragments();
-  }
-
-  /** Mallas de los componentes flotantes. Comparten geometria con las laminas. */
-  buildFragments() {
-    this.fragments = [];
-    for (let i = 0; i < FRAGMENT_SLOTS; i++) {
-      const uniforms = {
-        uMap: { value: null },
-        uCrop: { value: [0, 0, 1, 1] },
-        uImageAspect: { value: 1 },
-        uPlaneAspect: { value: 1 },
-        uBend: { value: 0 },
-        uShear: { value: SHEAR * 0.45 },
-        uPaper: { value: new Color('#e9e6e0') },
-        uOffset: { value: 0 },
-        uFocus: { value: 1 },
-        uHover: { value: 0 },
-        uOpacity: { value: 0 },
-        uRadius: { value: CORNER_RADIUS },
-        uPickColor: { value: new Color(0, 0, 0) }
-      };
-
-      const material = new ShaderMaterial({
-        uniforms,
-        vertexShader: SHEET_VERTEX,
-        fragmentShader: SHEET_FRAGMENT,
-        transparent: true,
-        depthWrite: false,
-        depthTest: false,
-        side: DoubleSide
-      });
-
-      const mesh = new Mesh(this.geometry, material);
-      mesh.frustumCulled = false;
-      mesh.visible = false;
-      // Siempre por delante de las laminas: sobresalen de la imagen.
-      mesh.renderOrder = 200 + i;
-      mesh.userData = { uniforms, material };
-      this.group.add(mesh);
-      this.fragments.push(mesh);
-    }
   }
 
   /* ── Datos ────────────────────────────────────────────────────────────── */
@@ -405,16 +345,18 @@ export class Gallery {
     this.smoothVelocity = damp(this.smoothVelocity, raw, 0.18, dt);
     this.velocity = this.smoothVelocity;
 
-    this.pointer.x = damp(this.pointer.x, this.pointerTarget.x, 0.09, dt);
-    this.pointer.y = damp(this.pointer.y, this.pointerTarget.y, 0.09, dt);
-    this.group.rotation.y = this.pointer.x * 0.055;
-    this.group.rotation.x = -this.pointer.y * 0.03;
+    if (this.calm) {
+      this.group.rotation.y = 0;
+      this.group.rotation.x = 0;
+    } else {
+      this.pointer.x = damp(this.pointer.x, this.pointerTarget.x, 0.09, dt);
+      this.pointer.y = damp(this.pointer.y, this.pointerTarget.y, 0.09, dt);
+      this.group.rotation.y = this.pointer.x * 0.055;
+      this.group.rotation.x = -this.pointer.y * 0.03;
+    }
 
-    const bend = clamp(this.velocity * 0.16, -1, 1);
+    const bend = this.calm ? 0 : clamp(this.velocity * 0.16, -1, 1);
     const half = Math.floor(this.activeSlots / 2);
-    let activeOffset = Infinity;
-    let activeAnchor = null;
-    let activeProject = null;
     const base = Math.round(this.position);
     const total = this.list.length;
     const hovered = this.hoverIndex;
@@ -452,17 +394,12 @@ export class Gallery {
       const width = this.planeWidth;
 
       // Flotacion: cada lamina cabecea a su propio ritmo, mas la activa.
-      const bob = Math.sin(this.time * 0.7 + logical * 1.7) * 0.018;
+      const bob = this.calm ? 0 : Math.sin(this.time * 0.7 + logical * 1.7) * 0.018;
       mesh.position.set(l.x * width, (l.y + bob) * width, l.z * width);
       mesh.rotation.y = l.rotY;
-      mesh.rotation.z = l.rotZ + Math.sin(this.time * 0.45 + logical) * 0.006;
+      mesh.rotation.z = l.rotZ + (this.calm ? 0 : Math.sin(this.time * 0.45 + logical) * 0.006);
       mesh.scale.setScalar(width * l.scale);
 
-      if (Math.abs(offset) < Math.abs(activeOffset)) {
-        activeOffset = offset;
-        activeAnchor = { x: l.x * width, y: (l.y + bob) * width, z: l.z * width };
-        activeProject = project;
-      }
       // De atrás hacia delante: las transparencias se apilan en orden.
       mesh.renderOrder = 100 - Math.round(Math.abs(offset) * 10);
 
@@ -479,70 +416,7 @@ export class Gallery {
       data.uniforms.uBend.value = bend * (1 - Math.min(Math.abs(offset), 3) * 0.18);
     }
 
-    this.updateFragments(activeProject, activeAnchor, activeOffset);
     this.renderer.render(this.scene, this.camera);
-  }
-
-  /**
-   * Coloca los componentes flotantes alrededor de la lámina activa.
-   * Sólo están presentes cuando el proyecto está asentado: en cuanto el scroll
-   * mueve la galería se retiran, y vuelven ya con los del proyecto siguiente.
-   * Ese ir y venir es lo que hace legible el cambio.
-   */
-  updateFragments(project, anchor, offset) {
-    const width = this.planeWidth;
-    const crops = (project && project.fragments) || [];
-    const texture = project ? this.textures.get(project.id) : null;
-    const imageAspect = texture?.userData?.aspect || PLANE_ASPECT;
-
-    // 1 con el proyecto centrado, 0 en cuanto empieza el viaje al siguiente.
-    const settled = anchor ? 1 - MathUtils.smoothstep(Math.abs(offset), 0.14, 0.5) : 0;
-
-    for (let i = 0; i < this.fragments.length; i++) {
-      const mesh = this.fragments[i];
-      const crop = crops[i];
-
-      if (!crop || !texture || settled <= 0.002) {
-        mesh.visible = false;
-        continue;
-      }
-      mesh.visible = true;
-
-      const l = FRAGMENT_LAYOUT[i];
-      const data = mesh.userData;
-      const [cx, cy, cw, ch] = crop;
-
-      // Proporción real del recorte dentro de la portada.
-      const cropAspect = (cw / ch) * imageAspect;
-      const w = l.size * width * (0.86 + 0.14 * settled);
-      const h = w / cropAspect;
-
-      data.uniforms.uMap.value = texture;
-      data.uniforms.uCrop.value[0] = cx;
-      // Los datos declaran el recorte desde ARRIBA, que es lo intuitivo al
-      // mirar la portada. El eje v de una textura se mide desde ABAJO, así que
-      // hay que darle la vuelta aquí. Sin esto los recortes caen en otra zona
-      // de la imagen (y en las portadas oscuras, en negro).
-      data.uniforms.uCrop.value[1] = 1 - (cy + ch);
-      data.uniforms.uCrop.value[2] = cw;
-      data.uniforms.uCrop.value[3] = ch;
-      data.uniforms.uImageAspect.value = cropAspect;
-      data.uniforms.uPlaneAspect.value = cropAspect;
-      data.uniforms.uOpacity.value = settled;
-
-      // Flotación propia: cada pieza cabecea con su desfase.
-      const swayX = Math.sin(this.time * 0.6 + l.phase) * 0.014 * width;
-      const swayY = Math.sin(this.time * 0.9 + l.phase) * 0.032 * width;
-
-      mesh.position.set(
-        anchor.x + l.x * width + swayX,
-        anchor.y + l.y * width + swayY,
-        anchor.z + l.z * width
-      );
-      mesh.rotation.z = l.spin + Math.sin(this.time * 0.5 + l.phase) * 0.022;
-      // La geometría mide 1 x 1/PLANE_ASPECT, de ahí el factor en Y.
-      mesh.scale.set(w, h * PLANE_ASPECT, 1);
-    }
   }
 
   /* ── Selección por GPU ────────────────────────────────────────────────── */
@@ -593,7 +467,6 @@ export class Gallery {
       mesh.userData.material.dispose();
       mesh.userData.pickMaterial.dispose();
     }
-    for (const mesh of this.fragments) mesh.userData.material.dispose();
     for (const texture of this.textures.values()) texture.dispose();
     this.textures.clear();
     this.pickTarget.dispose();

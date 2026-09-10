@@ -15,6 +15,7 @@ import { initContact } from './ui/contact.js';
 import { initViewer } from './ui/viewer.js';
 import { initSolutions } from './ui/solutions.js';
 import { initStage, galleryIsViable } from './ui/stage.js';
+import { initComponents } from './ui/components.js';
 import { initExplore } from './ui/explore.js';
 import { $ } from './dom.js';
 
@@ -32,17 +33,17 @@ function openProject(project) {
 
 async function loadGallery() {
   if (!galleryIsViable()) {
-    // Sin esto, "el scroll no cambia los proyectos" es indistinguible de un
-    // fallo. Aquí queda dicho por qué.
-    console.info(
-      '[hayai] galería en modo alternativa HTML —',
-      prefersReducedMotion() ? 'el sistema pide movimiento reducido' : 'WebGL no disponible'
-    );
+    // Sin esto, "no se ve la galería" es indistinguible de un fallo.
+    console.info('[hayai] galería en modo alternativa HTML: WebGL no disponible');
     return null;
+  }
+  if (prefersReducedMotion()) {
+    console.info('[hayai] movimiento reducido: la galería se dibuja quieta y se recorre con los controles');
   }
   try {
     const { Gallery } = await import('./gallery/scene.js');
     return new Gallery({
+      calm: prefersReducedMotion(),
       onContextLost: () => {
         // Contexto perdido: se conserva el contenido con la alternativa HTML.
         document.documentElement.dataset.gallery = 'fallback';
@@ -65,8 +66,11 @@ async function boot() {
 
   const gallery = await loadGallery();
 
+  const components = initComponents();
+
   const stage = initStage({
     gallery,
+    components,
     onOpenProject: openProject,
     onExplore: () => {
       if (gallery) setState({ mode: 'explore' });

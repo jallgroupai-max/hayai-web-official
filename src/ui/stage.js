@@ -47,6 +47,17 @@ const HOVER_THROTTLE = 80;
  */
 const DWELL = 0.55;
 
+/**
+ * Cuánto de asentado está el proyecto: 1 quieto en su sitio, 0 en mitad del
+ * cruce. Gobierna la aparición y la retirada de las piezas flotantes, así que
+ * su ida y venida ocurre exactamente con el scroll.
+ */
+export function settleAmount(position) {
+  const d = Math.abs(position - Math.round(position));
+  const t = clamp((d - 0.08) / 0.34, 0, 1);
+  return 1 - t * t * (3 - 2 * t);
+}
+
 /** Mapea el avance continuo del documento a un recorrido con reposos. */
 function dwellPosition(raw) {
   const index = Math.floor(raw);
@@ -56,7 +67,7 @@ function dwellPosition(raw) {
   return index + t * t * (3 - 2 * t);
 }
 
-export function initStage({ gallery, onOpenProject, onExplore }) {
+export function initStage({ gallery, components, onOpenProject, onExplore }) {
   const stage = $('[data-stage]');
   const host = $('[data-canvas-host]');
   const meta = $('[data-stage-meta]');
@@ -73,6 +84,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
   const nextBtn = $('[data-action="next"]');
 
   const usesGallery = !!gallery;
+  const calm = prefersReducedMotion();
   document.documentElement.dataset.gallery = usesGallery ? 'webgl' : 'fallback';
 
   let trigger = null;
@@ -203,10 +215,23 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     }, 1000);
   }
 
+  /**
+   * Quién manda la posición de la galería. Con el recorrido fijado manda el
+   * scroll; en móvil manda el controlador. Sin esta distinción, el bucle de
+   * fotograma leía el controlador y pisaba el índice que acababa de poner un
+   * botón.
+   */
+  function controllerDrives() {
+    return !isDesktopStage();
+  }
+
   function goToIndex(index) {
     setIndex(index);
-    if (isDesktopStage()) scrollToIndex(index);
-    else if (controller) controller.jumpTo(index);
+    if (controllerDrives()) {
+      if (controller) controller.jumpTo(index);
+    } else {
+      scrollToIndex(index);
+    }
   }
 
   /* ── Galería ──────────────────────────────────────────────────────────── */
@@ -215,10 +240,10 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     if (!usesGallery) return;
     const desktop = isDesktopStage();
     gallery.configure({
-      fitRatio: desktop ? 0.5 : 0.72,
-      widthRatio: desktop ? 0.3 : 0.56,
-      offsetRatio: desktop ? 0.04 : 0,
-      offsetYRatio: desktop ? -0.03 : 0
+      fitRatio: desktop ? 0.68 : 0.78,
+      widthRatio: desktop ? 0.34 : 0.6,
+      offsetRatio: 0,
+      offsetYRatio: 0
     });
     // El abanico envuelve siempre; el recorrido de scroll sigue siendo finito.
     gallery.setLoop(true);
@@ -267,6 +292,12 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
       onTap: handleTap,
       onPointer: (nx, ny) => gallery.setPointer(nx, ny)
     });
+    // syncGalleryList() corrio antes de que existiera el controlador, asi que su
+    // `if (controller) setLength(...)` no hizo nada. Sin longitud, update() e
+    // index() devuelven 0 siempre y el bucle de fotograma pisa cualquier cambio
+    // de indice. Se le da la longitud aqui, ya creado.
+    controller.setLength(currentList().length);
+    controller.setCalm(calm);
     controller.enable();
     controller.jumpTo(getState().index, { immediate: true });
 
@@ -279,7 +310,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     onFrame((dt) => {
       // En modo Explorar manda el otro controlador: aquí no se dibuja nada.
       if (getState().mode === 'explore') return;
-      if (!isDesktopStage()) {
+      if (controllerDrives()) {
         const pos = controller.update(dt);
         gallery.setPosition(pos);
         const idx = controller.index();
@@ -290,6 +321,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
         }
       }
       gallery.update(dt);
+      if (components) components.setSettle(settleAmount(gallery.position));
     });
 
     window.addEventListener('resize', () => {
@@ -391,8 +423,12 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
     }
     if (changed.has('index') || changed.has('filter')) {
       renderMeta();
-      if (!suppressScrollSync && isDesktopStage() && usesGallery) scrollToIndex(state.index);
-      if (!suppressScrollSync && !isDesktopStage() && controller) controller.jumpTo(state.index);
+      if (suppressScrollSync) return;
+      if (controllerDrives()) {
+        if (controller) controller.jumpTo(state.index);
+      } else if (usesGallery) {
+        scrollToIndex(state.index);
+      }
     }
   });
 
@@ -407,7 +443,11 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
   };
 }
 
-/** Decide si la galería WebGL puede usarse en este dispositivo/sesión. */
+/**
+ * La galería WebGL sólo se descarta si el dispositivo no puede dibujarla.
+ * Con movimiento reducido NO se descarta: se queda quieta. Apagarla entera
+ * dejaba sin contenido a quien sólo pedía que las cosas no se movieran solas.
+ */
 export function galleryIsViable() {
-  return hasWebGL() && !prefersReducedMotion();
+  return hasWebGL();
 }
