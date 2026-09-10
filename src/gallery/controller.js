@@ -29,6 +29,7 @@ export class GalleryController {
     // driving=false: el controlador sigue leyendo puntero y clics, pero no
     // mueve la galeria. Es el estado del recorrido normal, donde manda el scroll.
     this.driving = true;
+    this.calm = false;
     this.loop = false;
     this.length = 0;
 
@@ -62,6 +63,11 @@ export class GalleryController {
   setDriving(driving) {
     this.driving = driving;
     if (!driving) this.drag = null;
+  }
+
+  /** Movimiento reducido: sin inercia ni ajuste progresivo, salto directo. */
+  setCalm(calm) {
+    this.calm = calm;
   }
 
   enable() {
@@ -237,6 +243,11 @@ export class GalleryController {
         this.target = damp(this.target, snapped, 0.28, dt);
         if (Math.abs(this.target - snapped) < 0.002) this.target = snapped;
       }
+    }
+
+    if (this.calm) {
+      this.position = this.target;
+      return this.position;
     }
 
     this.position = damp(this.position, this.target, this.drag ? 0.32 : 0.16, dt);

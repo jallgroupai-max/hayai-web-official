@@ -79,10 +79,14 @@ Cuerpo que recibe `leadEndpoint`:
      description: 'Una frase.',
      accent: '#1A1413',           // color mientras carga la portada
      cover: './covers/mi-proyecto.jpg',
-     // Componentes que flotan alrededor de la lámina, recortados de la propia
-     // portada: [x, y, ancho, alto] normalizados, con origen ARRIBA a la
-     // izquierda. Entre 2 y 3, con proporciones entre 0,7 y 4.
-     fragments: [[0.15, 0.48, 0.34, 0.19]],
+     // Piezas de interfaz que flotan alrededor de la portada. Son HTML real,
+     // no recortes de la imagen. Tres clases: stat, row y action. Los valores
+     // salen de la captura del caso; no se inventan.
+     components: [
+       { kind: 'stat', value: '$4.280', label: 'ventas del día' },
+       { kind: 'row', meta: 'Más vendido', title: 'Brasa Burger', trailing: '38 hoy' },
+       { kind: 'action', label: 'Mesa 07', value: '$41,60', action: 'Nuevo pedido' }
+     ],
      logo: './assets-min/logo-mi-proyecto.png',
      file: './projects/mi-proyecto.html'  // null => tarjeta "Próximamente"
    }
@@ -157,17 +161,17 @@ tools/                Autoría: vendorizado, portadas y comprobaciones en navega
   a la posición de la galería: cada tramo pasa un 45 % detenido y el resto
   cambiando. Sin eso el recorrido se queda parado entre dos proyectos, con los
   componentes flotantes a medio desvanecer para siempre.
-- **Los componentes flotantes salen de la propia portada.** Son recortes UV de
-  la misma textura, no imágenes aparte: cero descargas nuevas y la cuenta de
-  texturas no se mueve. Sus coordenadas se declaran desde arriba a la izquierda
-  y la escena les da la vuelta en Y, porque el eje v de una textura se mide
-  desde abajo.
-- **El abanico es diagonal y cizallado.** Cada lámina es un paralelogramo
-  (cizalla constante en el vertex shader) y el recorrido sube hacia la derecha
-  con solape fuerte. Es lo que separa un abanico de un carrusel de tarjetas.
-- **La escena siempre gira en círculo, aunque el recorrido sea finito.** El
-  scroll recorre 0..n-1; sólo el dibujado envuelve, para que el abanico se vea
-  lleno también en el primer y el último proyecto.
+- **Un proyecto a la vez, centrado.** El cambio es un fundido cruzado en el
+  sitio, no un desplazamiento: la portada que sale se apaga mientras la que
+  entra aparece. Por eso bastan tres mallas.
+- **Los componentes flotantes son HTML real**, no recortes de la imagen: se leen
+  nítidos a cualquier tamaño y no dependen de dónde caiga un rectángulo sobre
+  una captura. Su opacidad la escribe el recorrido, así que entran y salen
+  exactamente con el scroll.
+- **Con movimiento reducido la galería sigue funcionando.** Se apaga lo que se
+  mueve solo (flotación, flexión por velocidad, reacción al puntero, inercia)
+  pero el cambio de proyecto con scroll se conserva, porque es un fundido y no
+  una transición espacial.
 - **El recorte de las máscaras de texto va en un hijo, nunca en el elemento
   observado.** IntersectionObserver tiene en cuenta el `clip-path` del propio
   objetivo: un titular recortado al 100 % nunca se considera visible y nunca se
@@ -183,18 +187,18 @@ tools/                Autoría: vendorizado, portadas y comprobaciones en navega
 cd tools
 node check.mjs            # comprobaciones en Chromium
 node check.mjs --shots    # además guarda capturas en screenshots/check/
-node crops.mjs            # hoja de contactos de los recortes de fragments
 ```
-
-`crops.mjs` dibuja cada portada con sus rectángulos encima y los recortes
-sueltos al lado. Es la forma de ajustar las coordenadas de `fragments`
-mirándolas, en vez de estimarlas: un recorte mal puesto cae en una zona vacía y
-en las portadas oscuras se ve como un rectángulo negro.
 
 Cubre cinco viewports (1440×900, 1280×800, 834×1112, 390×844, 360×740), zoom al
 200 %, filtros, categoría vacía, modo Explorar y su recorrido circular, visor,
 URLs directas, botón Atrás, movimiento reducido, ausencia de WebGL, límites de
 recursos de GPU y consola limpia.
+
+Sobre movimiento reducido: la galería **no** se apaga. Se dibuja igual y deja de
+moverse sola (sin flotación, sin flexión por velocidad, sin reacción al puntero,
+sin recorrido fijado ni inercia) y se recorre con los controles y la lista de
+títulos, que son acciones explícitas. La alternativa HTML se reserva para cuando
+no hay WebGL.
 
 ---
 

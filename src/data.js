@@ -28,12 +28,22 @@
  * @property {string} cover       Portada usada como textura de la lámina 3D.
  * @property {string} logo
  * @property {string|null} file   Experiencia navegable. null => "Próximamente".
- * @property {number[][]} [fragments]
- *   Componentes de interfaz que flotan alrededor de la lámina activa. Cada uno
- *   es un recorte de la PROPIA portada en coordenadas normalizadas
- *   [x, y, ancho, alto], con origen arriba a la izquierda. Se dibujan con la
- *   misma textura del proyecto, así que no añaden ni un byte de descarga.
- *   Elige entre 2 y 3, con proporciones entre 0,7 y 4 para que se lean sueltos.
+ * @property {Component[]} [components]
+ *   Piezas de interfaz que flotan alrededor de la portada. NO son recortes de
+ *   la imagen: se dibujan como HTML real, así que se leen nítidas a cualquier
+ *   tamaño y se pueden seleccionar y leer con lector de pantalla. Los valores
+ *   salen de la captura del caso, no se inventan.
+ */
+
+/**
+ * @typedef {Object} Component
+ * @property {'stat'|'row'|'action'} kind
+ * @property {string} [value]     stat: cifra grande.        action: importe.
+ * @property {string} [label]     stat: pie de la cifra.     action: encabezado.
+ * @property {string} [meta]      row: etiqueta superior.
+ * @property {string} [title]     row: línea principal.
+ * @property {string} [trailing]  row: valor a la derecha.
+ * @property {string} [action]    action: texto del botón.
  */
 
 /**
@@ -111,7 +121,11 @@ export const PROJECTS = [
     cover: './covers/guarowook.jpg',
     logo: './assets-min/logo-guarowook.png',
     file: './projects/guarowook.html',
-    fragments: [[0.155, 0.478, 0.34, 0.19], [0.038, 0.4, 0.128, 0.096], [0.628, 0.652, 0.225, 0.04]]
+    components: [
+      { kind: 'row', meta: 'Entradas', title: 'ENT ALITAS FRITAS', trailing: '$4.00' },
+      { kind: 'action', label: 'Total', value: '$16.00', action: 'Revisar y enviar' },
+      { kind: 'stat', value: '4', label: 'ítems en la comanda' }
+    ]
   },
   {
     id: 'coffee-cake',
@@ -123,7 +137,11 @@ export const PROJECTS = [
     cover: './covers/coffee-cake.jpg',
     logo: './assets-min/logo-coffee-cake.png',
     file: './projects/coffee-cake.html',
-    fragments: [[0.054, 0.338, 0.56, 0.176], [0.752, 0.732, 0.208, 0.182], [0.645, 0.458, 0.315, 0.066]]
+    components: [
+      { kind: 'row', meta: 'Estación', title: 'Barista', trailing: '6 activas' },
+      { kind: 'stat', value: '12', label: 'órdenes abiertas' },
+      { kind: 'action', label: 'Mesa 04', value: '2 comensales', action: 'Continuar' }
+    ]
   },
   {
     id: 'brasa',
@@ -135,7 +153,11 @@ export const PROJECTS = [
     cover: './covers/brasa.jpg',
     logo: './assets-min/logo-brasa.jpg',
     file: './projects/brasa.html',
-    fragments: [[0.234, 0.185, 0.34, 0.17], [0.576, 0.185, 0.226, 0.17], [0.662, 0.128, 0.14, 0.052]]
+    components: [
+      { kind: 'stat', value: '$4.280', label: 'ventas del día' },
+      { kind: 'row', meta: 'Más vendido', title: 'Brasa Burger', trailing: '38 hoy' },
+      { kind: 'action', label: 'Mesa 07', value: '$41,60', action: 'Nuevo pedido' }
+    ]
   },
   {
     id: 'changan',
@@ -147,7 +169,11 @@ export const PROJECTS = [
     cover: './covers/changan.jpg',
     logo: './assets-min/logo-changan.jpg',
     file: './projects/changan-360.html',
-    fragments: [[0.183, 0.303, 0.634, 0.204], [0.022, 0.622, 0.235, 0.058]]
+    components: [
+      { kind: 'stat', value: '36', label: 'frames por giro' },
+      { kind: 'stat', value: '360°', label: 'exterior e interior' },
+      { kind: 'row', meta: 'Showroom público', title: 'CS55 Plus', trailing: 'Vista exterior' }
+    ]
   },
   {
     id: 'jac',
@@ -159,7 +185,11 @@ export const PROJECTS = [
     cover: './covers/jac.jpg',
     logo: './assets-min/logo-jac.jpg',
     file: './projects/jac-360.html',
-    fragments: [[0.14, 0.3, 0.64, 0.23], [0.615, 0.855, 0.33, 0.1]]
+    components: [
+      { kind: 'row', meta: 'Vehículo', title: 'Frison T9', trailing: 'Exterior' },
+      { kind: 'stat', value: '360°', label: 'rotación libre' },
+      { kind: 'row', meta: 'Escena', title: 'Showroom premium', trailing: '01' }
+    ]
   },
   {
     id: 'rents-brooklyn-queens',
@@ -171,7 +201,11 @@ export const PROJECTS = [
     cover: './covers/rents-brooklyn-queens.jpg',
     logo: './assets-min/logo-reents.png',
     file: './projects/rents-brooklyn-queens.html',
-    fragments: [[0.312, 0.33, 0.375, 0.22], [0.242, 0.78, 0.222, 0.205], [0.055, 0.752, 0.172, 0.13]]
+    components: [
+      { kind: 'row', meta: 'Guest favourite', title: 'The Marlowe House', trailing: '4.9' },
+      { kind: 'stat', value: '$186', label: 'por noche' },
+      { kind: 'row', meta: 'Destino', title: 'Williamsburg, Brooklyn', trailing: '2 adultos' }
+    ]
   }
 ];
 

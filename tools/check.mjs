@@ -131,6 +131,35 @@ for (const vp of VIEWPORTS) {
     if (firstTitle === secondTitle) fail(`${vp.name}: el scroll cambia de proyecto`, `${firstTitle} -> ${secondTitle}`);
     else pass(`${vp.name}: el scroll cambia de proyecto`, `${firstTitle} -> ${secondTitle} (${counter})`);
   } else {
+    // El arrastre solo manda donde el escenario esta apilado. Con puntero fino
+    // y 834 px el recorrido lo lleva el scroll, asi que ahi no aplica.
+    const apilado = await page.evaluate(
+      () => getComputedStyle(document.querySelector('.stage__sticky')).position !== 'sticky'
+    );
+    if (!apilado) {
+      pass(`${vp.name}: recorrido por scroll (puntero fino)`, 'el arrastre no aplica aqui');
+    } else {
+    const antesArrastre = await page.evaluate(() => window.HAYAI.getState().index);
+    // Sobre el lienzo de verdad: en movil queda debajo del texto de entrada, y
+    // ademas hay que volver a el, porque la prueba de scroll lo ha dejado muy
+    // por encima del viewport y su boundingBox saldria en negativo.
+    await page.locator('[data-canvas-host]').scrollIntoViewIfNeeded();
+    await page.waitForTimeout(600);
+    const lienzo = await page.locator('[data-canvas-host]').boundingBox();
+    const cx = Math.round(lienzo.x + lienzo.width / 2);
+    const cy = Math.round(lienzo.y + lienzo.height / 2);
+    await page.mouse.move(cx + 100, cy);
+    await page.mouse.down();
+    for (let i = 1; i <= 10; i++) await page.mouse.move(cx + 100 - i * 20, cy);
+    await page.mouse.up();
+    await page.waitForTimeout(900);
+    const trasArrastre = await page.evaluate(() => window.HAYAI.getState().index);
+    if (trasArrastre !== antesArrastre) {
+      pass(`${vp.name}: arrastre cambia de proyecto`, `${antesArrastre} -> ${trasArrastre}`);
+    } else {
+      fail(`${vp.name}: arrastre cambia de proyecto`, `${antesArrastre} -> ${trasArrastre}`);
+    }
+    }
     pass(`${vp.name}: recorrido vertical nativo`, `${firstTitle}`);
   }
 
@@ -248,7 +277,7 @@ for (const vp of VIEWPORTS) {
   // galeria a medio camino, que es justo lo que este caso quiere distinguir.
   const opacidad = () =>
     page.evaluate(() =>
-      Math.max(...window.HAYAI.gallery.fragments.map((m) => m.userData.uniforms.uOpacity.value))
+      Number(getComputedStyle(document.querySelector('[data-components]')).getPropertyValue('--settle') || 1)
     );
 
   await page.mouse.move(720, 450);
@@ -260,16 +289,17 @@ for (const vp of VIEWPORTS) {
   // una rueda corta ya no mueve el proyecto de su reposo, asi que medir en un
   // instante suelto no dice nada.
   let minimo = 1;
-  for (let i = 0; i < 16; i++) {
-    await page.mouse.wheel(0, 260);
-    await page.waitForTimeout(70);
+  for (let i = 0; i < 34; i++) {
+    await page.mouse.wheel(0, 120);
+    await page.waitForTimeout(55);
     minimo = Math.min(minimo, await opacidad());
   }
 
-  if (quietos > 0.9 && minimo < 0.35) {
-    pass('componentes flotantes', `opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
+  const piezas = await page.locator('.ui-piece').count();
+  if (quietos > 0.9 && minimo < 0.35 && piezas === 3) {
+    pass('componentes flotantes', `${piezas} piezas, opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
   } else {
-    fail('componentes flotantes', `opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
+    fail('componentes flotantes', `${piezas} piezas, opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
   }
 
   if (errors.length) fail('interacciones: consola limpia', errors.slice(0, 5).join(' | '));
@@ -298,12 +328,41 @@ for (const vp of VIEWPORTS) {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const { page, errors } = await newPage(context);
   await goto(page, origin + '/');
-  await page.waitForTimeout(1800);
-  const mode = await page.evaluate(() => document.documentElement.dataset.gallery);
-  const img = await page.locator('[data-fallback-img]').isVisible();
-  const cards = await page.locator('.work-card').count();
-  if (mode === 'fallback' && img && cards === 6) pass('movimiento reducido', 'alternativa HTML completa');
-  else fail('movimiento reducido', `modo:${mode} img:${img} tarjetas:${cards}`);
+  await page.waitForTimeout(2600);
+
+  // La galeria SIGUE ahi y sigue teniendo vida: lo que se apaga es lo que puede
+  // marear (parallax y revelados enganchados al scroll), no la flotacion.
+  const modo = await page.evaluate(() => document.documentElement.dataset.gallery);
+  const tarjetas = await page.locator('.work-card').count();
+
+  const parallaxQuieto = await page.evaluate(() => {
+    const img = document.querySelector('[data-parallax] img');
+    if (!img) return true;
+    const t = getComputedStyle(img).transform;
+    return t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)';
+  });
+
+  if (modo === 'webgl' && tarjetas === 6 && parallaxQuieto) {
+    pass('movimiento reducido', 'galeria dibujada, parallax y revelados apagados');
+  } else {
+    fail('movimiento reducido', `modo:${modo} tarjetas:${tarjetas} parallaxQuieto:${parallaxQuieto}`);
+  }
+
+  // La flotacion se conserva por decision expresa del proyecto.
+  const antesFlot = await page.evaluate(() => getComputedStyle(document.querySelector('.ui-piece')).transform);
+  await page.waitForTimeout(900);
+  const despuesFlot = await page.evaluate(() => getComputedStyle(document.querySelector('.ui-piece')).transform);
+  if (antesFlot !== despuesFlot) pass('movimiento reducido: flotacion conservada');
+  else fail('movimiento reducido: flotacion conservada', `${antesFlot} == ${despuesFlot}`);
+
+  // Y sigue siendo recorrible: los controles son acciones explicitas.
+  const inicial = await page.evaluate(() => window.HAYAI.getState().index);
+  await page.locator('[data-action="next"]').click();
+  await page.waitForTimeout(500);
+  const siguiente = await page.evaluate(() => window.HAYAI.getState().index);
+  if (siguiente === inicial + 1) pass('movimiento reducido: recorrible', `${inicial} -> ${siguiente}`);
+  else fail('movimiento reducido: recorrible', `${inicial} -> ${siguiente}`);
+
   if (wantShots) await page.screenshot({ path: path.join(SHOTS, 'reduced-motion.png') });
   if (errors.length) fail('movimiento reducido: consola limpia', errors.slice(0, 3).join(' | '));
   else pass('movimiento reducido: consola limpia');
@@ -382,11 +441,17 @@ for (const vp of VIEWPORTS) {
       await sleep(600);
     });
 
-  // Dos ciclos de calentamiento: las texturas se suben a la GPU la primera vez
-  // que se dibuja cada portada, así que antes de medir hay que verlas todas.
-  await cycle();
-  await cycle();
-  const before = await snapshot();
+  // Calentamiento hasta estabilizar: una textura se sube a la GPU la primera vez
+  // que se dibuja su portada, y con tres mallas en pantalla hacen falta varias
+  // vueltas para haberlas visto todas. Fijar el numero de ciclos a ojo hacia que
+  // la medida dependiera de cuantas hubieran salido ya.
+  let before = await snapshot();
+  for (let i = 0; i < 6; i++) {
+    await cycle();
+    const ahora = await snapshot();
+    if (ahora.textures === before.textures) break;
+    before = ahora;
+  }
   // Tercer ciclo idéntico: si el índice circular filtrara recursos, se vería aquí.
   await cycle();
   const after = await snapshot();
