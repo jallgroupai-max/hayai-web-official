@@ -116,19 +116,16 @@
   isolation: isolate;
 }
 
-/* Logotipo gigante al fondo. La portada le pasa por delante y lo recorta: ese
-   solape es lo que da profundidad al plano. */
+/* Logotipo en la esquina superior derecha, que era el hueco muerto del
+   escenario. Al salir de abajo, la portada se queda con todo ese alto. */
 .stage__wordmark {
   position: absolute;
   z-index: 0;
-  left: 50%;
-  bottom: clamp(6px, 1.5vh, 22px);
-  transform: translateX(-50%);
-  width: clamp(280px, 46vw, 720px);
+  right: var(--edge);
+  top: calc(var(--header-h) + clamp(14px, 3vh, 34px));
+  width: clamp(160px, 21vw, 320px);
   height: auto;
-  /* Marca de fondo, no protagonista: se queda por debajo de la portada y de
-     las piezas sin competir con ellas. */
-  opacity: 0.3;
+  opacity: 0.28;
   user-select: none;
   pointer-events: none;
 }
@@ -154,8 +151,8 @@
   position: absolute;
   background: var(--paper-lift);
   color: var(--ink);
-  padding: 12px 14px;
-  min-width: 148px;
+  padding: 11px 13px;
+  min-width: 138px;
   /* Sombra en tres planos: contacto, cuerpo y una proyección larga y difusa
      que separa la pieza del fondo. */
   box-shadow:
@@ -168,12 +165,14 @@
   will-change: transform;
 }
 
-/* Agrupadas, no repartidas por el escenario: las tres cuelgan del borde
-   izquierdo de la portada, escalonadas y con la separación justa para que se
-   lean como un racimo y no como una lista. */
-.ui-piece:nth-child(1) { left: 25.5%; top: 27%; animation-duration: 6.4s; }
-.ui-piece:nth-child(2) { left: 31%; top: 45%; animation-duration: 5.2s; animation-delay: -1.9s; }
-.ui-piece:nth-child(3) { left: 27%; top: 62%; animation-duration: 7.1s; animation-delay: -3.4s; }
+/* Agrupadas, no repartidas por el escenario. Cuatro escalonadas colgando del
+   borde izquierdo de la portada y una quinta al otro lado, en el hueco que
+   queda entre la lámina y la lista de títulos. */
+.ui-piece:nth-child(1) { left: 20%; top: 18%; animation-duration: 6.4s; }
+.ui-piece:nth-child(2) { left: 26%; top: 37%; animation-duration: 5.2s; animation-delay: -1.9s; }
+.ui-piece:nth-child(3) { left: 21.5%; top: 56%; animation-duration: 7.1s; animation-delay: -3.4s; }
+.ui-piece:nth-child(4) { left: 27%; top: 74%; animation-duration: 6.8s; animation-delay: -5.2s; }
+.ui-piece:nth-child(5) { right: 23%; top: 27%; animation-duration: 5.8s; animation-delay: -0.9s; }
 
 @keyframes flotar {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }

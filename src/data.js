@@ -124,7 +124,9 @@ export const PROJECTS = [
     components: [
       { kind: 'row', meta: 'Entradas', title: 'ENT ALITAS FRITAS', trailing: '$4.00' },
       { kind: 'action', label: 'Total', value: '$16.00', action: 'Revisar y enviar' },
-      { kind: 'stat', value: '4', label: 'ítems en la comanda' }
+      { kind: 'stat', value: '4', label: 'ítems en la comanda' },
+      { kind: 'row', meta: 'Mesa 1', title: 'JOSE', trailing: 'Mesero' },
+      { kind: 'stat', value: '8', label: 'categorías del menú' }
     ]
   },
   {
@@ -140,7 +142,9 @@ export const PROJECTS = [
     components: [
       { kind: 'row', meta: 'Estación', title: 'Barista', trailing: '6 activas' },
       { kind: 'stat', value: '12', label: 'órdenes abiertas' },
-      { kind: 'action', label: 'Mesa 04', value: '2 comensales', action: 'Continuar' }
+      { kind: 'action', label: 'Mesa 04', value: '2 comensales', action: 'Continuar' },
+      { kind: 'stat', value: '4m', label: 'preparación media' },
+      { kind: 'row', meta: 'Caja', title: 'Pagos y tickets', trailing: '3 pendientes' }
     ]
   },
   {
@@ -156,7 +160,9 @@ export const PROJECTS = [
     components: [
       { kind: 'stat', value: '$4.280', label: 'ventas del día' },
       { kind: 'row', meta: 'Más vendido', title: 'Brasa Burger', trailing: '38 hoy' },
-      { kind: 'action', label: 'Mesa 07', value: '$41,60', action: 'Nuevo pedido' }
+      { kind: 'action', label: 'Mesa 07', value: '$41,60', action: 'Nuevo pedido' },
+      { kind: 'stat', value: '143', label: 'pedidos del día' },
+      { kind: 'row', meta: 'Salón principal', title: '14 mesas', trailing: '6 asignadas' }
     ]
   },
   {
@@ -172,7 +178,9 @@ export const PROJECTS = [
     components: [
       { kind: 'stat', value: '36', label: 'frames por giro' },
       { kind: 'stat', value: '360°', label: 'exterior e interior' },
-      { kind: 'row', meta: 'Showroom público', title: 'CS55 Plus', trailing: 'Vista exterior' }
+      { kind: 'row', meta: 'Showroom público', title: 'CS55 Plus', trailing: 'Vista exterior' },
+      { kind: 'stat', value: '4', label: 'acabados por modelo' },
+      { kind: 'row', meta: 'Gestión', title: 'CMS interno', trailing: 'Activo' }
     ]
   },
   {
@@ -188,7 +196,9 @@ export const PROJECTS = [
     components: [
       { kind: 'row', meta: 'Vehículo', title: 'Frison T9', trailing: 'Exterior' },
       { kind: 'stat', value: '360°', label: 'rotación libre' },
-      { kind: 'row', meta: 'Escena', title: 'Showroom premium', trailing: '01' }
+      { kind: 'row', meta: 'Escena', title: 'Showroom premium', trailing: '01' },
+      { kind: 'stat', value: '36', label: 'frames por giro' },
+      { kind: 'row', meta: 'Control', title: 'Girar y acercar', trailing: 'Drag · Zoom' }
     ]
   },
   {
@@ -204,7 +214,9 @@ export const PROJECTS = [
     components: [
       { kind: 'row', meta: 'Guest favourite', title: 'The Marlowe House', trailing: '4.9' },
       { kind: 'stat', value: '$186', label: 'por noche' },
-      { kind: 'row', meta: 'Destino', title: 'Williamsburg, Brooklyn', trailing: '2 adultos' }
+      { kind: 'row', meta: 'Destino', title: 'Williamsburg, Brooklyn', trailing: '2 adultos' },
+      { kind: 'stat', value: '214', label: 'alojamientos' },
+      { kind: 'row', meta: 'Filtros', title: 'Desayuno y cancelación', trailing: '5★' }
     ]
   }
 ];
