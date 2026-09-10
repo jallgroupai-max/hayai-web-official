@@ -126,6 +126,9 @@
   transform: translateX(-50%);
   width: clamp(280px, 46vw, 720px);
   height: auto;
+  /* Marca de fondo, no protagonista: se queda por debajo de la portada y de
+     las piezas sin competir con ellas. */
+  opacity: 0.3;
   user-select: none;
   pointer-events: none;
 }
@@ -153,22 +156,24 @@
   color: var(--ink);
   padding: 12px 14px;
   min-width: 148px;
-  /* Sombra en dos planos: una cercana que asienta la pieza y otra larga y
-     difusa que la despega del fondo. */
+  /* Sombra en tres planos: contacto, cuerpo y una proyección larga y difusa
+     que separa la pieza del fondo. */
   box-shadow:
-    0 4px 10px -6px rgba(23, 19, 15, 0.3),
-    0 34px 70px -24px rgba(23, 19, 15, 0.5);
+    0 2px 4px -2px rgba(23, 19, 15, 0.28),
+    0 12px 24px -10px rgba(23, 19, 15, 0.34),
+    0 46px 80px -28px rgba(23, 19, 15, 0.55);
   opacity: var(--settle, 1);
   transition: opacity 120ms linear;
   animation: flotar 6s ease-in-out infinite;
   will-change: transform;
 }
 
-/* Pegadas a la portada, solapándola: por eso los porcentajes caen dentro de la
-   banda que ocupa la lámina (del 34 % al 66 % del ancho). */
-.ui-piece:nth-child(1) { left: 28.5%; top: 19%; animation-duration: 6.4s; }
-.ui-piece:nth-child(2) { right: 25%; top: 46%; animation-duration: 5.2s; animation-delay: -1.9s; }
-.ui-piece:nth-child(3) { left: 31%; bottom: 17%; animation-duration: 7.1s; animation-delay: -3.4s; }
+/* Agrupadas, no repartidas por el escenario: las tres cuelgan del borde
+   izquierdo de la portada, escalonadas y con la separación justa para que se
+   lean como un racimo y no como una lista. */
+.ui-piece:nth-child(1) { left: 25.5%; top: 27%; animation-duration: 6.4s; }
+.ui-piece:nth-child(2) { left: 31%; top: 45%; animation-duration: 5.2s; animation-delay: -1.9s; }
+.ui-piece:nth-child(3) { left: 27%; top: 62%; animation-duration: 7.1s; animation-delay: -3.4s; }
 
 @keyframes flotar {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }

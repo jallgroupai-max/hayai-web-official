@@ -330,27 +330,30 @@ for (const vp of VIEWPORTS) {
   await goto(page, origin + '/');
   await page.waitForTimeout(2600);
 
-  // La galeria SIGUE ahi: lo que desaparece es el movimiento, no el contenido.
+  // La galeria SIGUE ahi y sigue teniendo vida: lo que se apaga es lo que puede
+  // marear (parallax y revelados enganchados al scroll), no la flotacion.
   const modo = await page.evaluate(() => document.documentElement.dataset.gallery);
   const tarjetas = await page.locator('.work-card').count();
 
-  // Nada se mueve solo: dos fotogramas separados deben dar la misma escena.
-  const posiciones = () =>
-    page.evaluate(() =>
-      window.HAYAI.gallery.slots
-        .filter((m) => m.visible)
-        .map((m) => `${m.position.x.toFixed(4)},${m.position.y.toFixed(4)},${m.rotation.z.toFixed(4)}`)
-        .join('|')
-    );
-  const antes = await posiciones();
-  await page.waitForTimeout(1200);
-  const despues = await posiciones();
+  const parallaxQuieto = await page.evaluate(() => {
+    const img = document.querySelector('[data-parallax] img');
+    if (!img) return true;
+    const t = getComputedStyle(img).transform;
+    return t === 'none' || t === 'matrix(1, 0, 0, 1, 0, 0)';
+  });
 
-  if (modo === 'webgl' && tarjetas === 6 && antes === despues && antes.length > 0) {
-    pass('movimiento reducido', 'galeria dibujada y completamente quieta');
+  if (modo === 'webgl' && tarjetas === 6 && parallaxQuieto) {
+    pass('movimiento reducido', 'galeria dibujada, parallax y revelados apagados');
   } else {
-    fail('movimiento reducido', `modo:${modo} tarjetas:${tarjetas} quieta:${antes === despues}`);
+    fail('movimiento reducido', `modo:${modo} tarjetas:${tarjetas} parallaxQuieto:${parallaxQuieto}`);
   }
+
+  // La flotacion se conserva por decision expresa del proyecto.
+  const antesFlot = await page.evaluate(() => getComputedStyle(document.querySelector('.ui-piece')).transform);
+  await page.waitForTimeout(900);
+  const despuesFlot = await page.evaluate(() => getComputedStyle(document.querySelector('.ui-piece')).transform);
+  if (antesFlot !== despuesFlot) pass('movimiento reducido: flotacion conservada');
+  else fail('movimiento reducido: flotacion conservada', `${antesFlot} == ${despuesFlot}`);
 
   // Y sigue siendo recorrible: los controles son acciones explicitas.
   const inicial = await page.evaluate(() => window.HAYAI.getState().index);

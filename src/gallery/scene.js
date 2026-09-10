@@ -69,9 +69,10 @@ export class Gallery {
   /** @param {{ onContextLost?: () => void, calm?: boolean }} [hooks] */
   constructor(hooks = {}) {
     this.hooks = hooks;
-    /* Movimiento reducido: la galería se dibuja igual, pero nada se mueve solo.
-       Fuera flotación, fuera flexión por velocidad y fuera reacción al puntero;
-       es decir, todo lo que se mueve sin que el usuario lo haya pedido. */
+    /* Movimiento reducido: se apaga lo que va enganchado a la entrada del
+       usuario —flexión por velocidad y reacción al puntero—, que es lo que
+       puede sentirse inestable. El cabeceo de reposo se conserva por decisión
+       expresa: es lento, de poca amplitud y no viaja con el gesto. */
     this.calm = !!hooks.calm;
 
     this.renderer = new WebGLRenderer({ antialias: true, alpha: true, powerPreference: 'high-performance' });
@@ -394,10 +395,10 @@ export class Gallery {
       const width = this.planeWidth;
 
       // Flotacion: cada lamina cabecea a su propio ritmo, mas la activa.
-      const bob = this.calm ? 0 : Math.sin(this.time * 0.7 + logical * 1.7) * 0.018;
+      const bob = Math.sin(this.time * 0.7 + logical * 1.7) * 0.02;
       mesh.position.set(l.x * width, (l.y + bob) * width, l.z * width);
       mesh.rotation.y = l.rotY;
-      mesh.rotation.z = l.rotZ + (this.calm ? 0 : Math.sin(this.time * 0.45 + logical) * 0.006);
+      mesh.rotation.z = l.rotZ + Math.sin(this.time * 0.45 + logical) * 0.007;
       mesh.scale.setScalar(width * l.scale);
 
       // De atrás hacia delante: las transparencias se apilan en orden.
