@@ -1,0 +1,17 @@
+# Herramientas de autoría (no forman parte del sitio desplegado)
+tools/node_modules/
+
+# Capturas de verificación: se regeneran con `npm run check -- --shots`
+screenshots/check/
+
+# Utillaje de agentes instalado en local (skills, subagentes). No forma parte
+# del sitio; skills-lock.json permite reinstalarlo con `npx skills add`.
+.agents/
+.claude/
+/package-lock.json
+/skills-lock.json
+tools/run.log
+
+# Sistema
+.DS_Store
+Thumbs.db

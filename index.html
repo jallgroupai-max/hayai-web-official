@@ -1,860 +1,329 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="es" data-gallery="pending">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script src="./support.js"></script>
-</head>
-<body>
-<x-dc>
-<helmet>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>HAYAI · Software que hace avanzar tu negocio</title>
+<meta name="description" content="HAYAI es un estudio de software. Diseñamos y desarrollamos sistemas de comandas, concesionarios virtuales 360°, plataformas de hotelería, tiendas online y software a medida." />
+<link rel="canonical" href="https://hayai.com.ve/" />
+<meta name="theme-color" content="#E9E6E0" />
+<meta name="color-scheme" content="light" />
+
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="HAYAI" />
+<meta property="og:locale" content="es_VE" />
+<meta property="og:url" content="https://hayai.com.ve/" />
+<meta property="og:title" content="HAYAI · Software que hace avanzar tu negocio" />
+<meta property="og:description" content="Estudio de software: comandas, concesionarios virtuales 360°, hotelería, tiendas online y productos a medida." />
+<meta property="og:image" content="https://hayai.com.ve/covers/guarowook.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="HAYAI · Software que hace avanzar tu negocio" />
+<meta name="twitter:description" content="Estudio de software: comandas, concesionarios virtuales 360°, hotelería, tiendas online y productos a medida." />
+<meta name="twitter:image" content="https://hayai.com.ve/covers/guarowook.jpg" />
+
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="crossorigin" />
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=IBM+Plex+Sans:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-<style>
-  html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; background:#F5F1EC; }
-  * { box-sizing:border-box; }
-  a { color:#241E17; text-decoration:none; }
-  a:hover { color:#69625B; }
-  input, textarea, button { font-family:'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif; }
-  ::placeholder { color:#8B857F; }
-  @keyframes viewIn { from { opacity:0; transform:translateY(14px) scale(.99); filter:blur(3px); } to { opacity:1; transform:none; filter:blur(0); } }
-  @keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-  @keyframes viewerIn { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
-  @keyframes haloDrift { from { transform:translate3d(0,0,0); } to { transform:translate3d(10px,-8px,0); } }
-  @keyframes barSweep { 0% { transform:translateX(-100%); } 100% { transform:translateX(300%); } }
-  @keyframes ringSpin { to { transform:rotate(360deg); } }
-  @keyframes pulseDot { 0%,100% { opacity:.25; transform:scale(.85); } 50% { opacity:1; transform:scale(1); } }
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" />
+<link rel="stylesheet" href="./styles/base.css" />
+<link rel="stylesheet" href="./styles/site.css" />
+<link rel="preload" as="image" href="./covers/guarowook.jpg" fetchpriority="high" />
 
-  /* ==================== RESPONSIVE ====================
-     El diseño base es de lienzo fijo: 100dvh + overflow:hidden, vistas en
-     position:absolute e inset:0, y rejillas de 3x2 / 4 columnas. En un movil eso
-     deja todo comprimido y sin scroll. Aqui se libera el alto, las vistas pasan a
-     fluir en el documento y las rejillas se apilan.
-
-     Todo el maquetado usa estilos inline, que ganan en especificidad a cualquier
-     regla de hoja de estilos, por eso estas reglas llevan !important. No es
-     descuido: es la unica forma de sobreescribir un atributo style sin reescribir
-     el documento entero. */
-
-  @media (max-width: 860px) {
-    html, body { height:auto !important; overflow-x:hidden !important; overflow-y:auto !important; }
-
-    /* 100vw ignora el ancho de la barra de scroll y provoca desbordamiento lateral */
-    .app-root { width:100% !important; height:auto !important; min-height:100dvh !important; overflow:visible !important; }
-
-    /* Los fondos decorativos pasan a fixed para seguir cubriendo la pantalla al hacer scroll */
-    .bg-layer { position:fixed !important; }
-
-    /* Las vistas dejan de estar posicionadas y fluyen una debajo de otra */
-    .view { position:relative !important; inset:auto !important; min-height:100dvh; padding:20px 16px 34px !important; }
-
-    .cat-header, .team-header, .proj-header { flex-wrap:wrap !important; align-items:center !important; gap:12px !important; }
-    .team-headleft, .proj-headleft { flex-wrap:wrap !important; gap:12px !important; }
-    .nav-actions { flex-wrap:wrap !important; gap:8px !important; }
-
-    /* Categorias: rejilla 3x2 de alto fijo -> 2 columnas de alto automatico */
-    .cat-center { justify-content:flex-start !important; gap:26px !important; padding-top:22px !important; }
-    .cat-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; grid-template-rows:none !important; max-height:none !important; gap:12px !important; }
-    .cat-card { max-height:none !important; min-height:0 !important; padding:16px !important; gap:12px !important; }
-
-    /* Equipo: 4 columnas -> 2 */
-    .team-lede { text-align:left !important; max-width:none !important; }
-    .team-body { align-items:flex-start !important; padding:20px 0 !important; }
-    .team-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:12px !important; }
-    .team-cta { flex-wrap:wrap !important; justify-content:center !important; text-align:center !important; }
-
-    /* Proyectos: el carrusel horizontal de 3 por vista pasa a pila vertical.
-       trackShift se calcula en JS asumiendo 3 columnas, asi que se anula el
-       transform en vez de tocar la logica del carrusel. */
-    .proj-count { text-align:left !important; }
-    .proj-section { width:100% !important; margin:0 !important; padding:18px 0 !important; }
-    .proj-clip { overflow:visible !important; margin:0 !important; padding:0 !important; }
-    .proj-track { flex-direction:column !important; transform:none !important; gap:14px !important; }
-    .proj-item { flex:0 0 auto !important; width:100% !important; }
-    .proj-arrows { display:none !important; }
-
-    .form-wrap { overflow:visible !important; margin-bottom:0 !important; padding-bottom:20px !important; }
-    .lead-form { max-height:none !important; overflow:visible !important; }
-
-    /* Visor: a pantalla completa para dar el maximo ancho al caso de estudio */
-    .viewer-overlay { padding:0 !important; }
-    .viewer-dialog { width:100% !important; height:100% !important; border:none !important; border-radius:0 !important; }
-    .viewer-bar { height:auto !important; flex-wrap:wrap !important; gap:8px !important; padding:8px 10px !important; }
-    .viewer-barleft, .viewer-barright { min-width:0 !important; flex:1 1 auto !important; }
-    .viewer-barright { justify-content:flex-end !important; }
-  }
-
-  @media (max-width: 600px) {
-    .view { padding:16px 13px 30px !important; }
-    .cat-title { font-size:clamp(26px,6.8vw,34px) !important; }
-    .cat-grid { grid-template-columns:1fr !important; }
-    .cat-cardtop { gap:14px !important; }
-    .cat-icon { width:66px !important; height:66px !important; }
-    .form-row { grid-template-columns:1fr !important; gap:12px !important; }
-    .nav-actions button { flex:1 1 auto !important; }
-    /* El titulo del proyecto ya se ve en la propia pagina cargada */
-    .viewer-label { display:none !important; }
-    /* Con los tamanos de escritorio la barra del visor se parte en dos filas y
-       roba alto util al caso de estudio; asi entra en una sola. */
-    .viewer-back { font-size:10px !important; padding:0 10px !important; letter-spacing:.04em !important; }
-    .viewer-barright button { font-size:10px !important; }
-  }
-</style>
-</helmet>
-<div class="app-root" style="width:100vw; height:100dvh; overflow:hidden; background:#F2F2EF; color:#241E17; font-family:'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif; display:flex; flex-direction:column; position:relative;">
-
-  <div aria-hidden="true" style="position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none;">
-    <img src="./assets/cat-pos.png" alt="" width="1" height="1" />
-    <img src="./assets/cat-showrooms.png" alt="" width="1" height="1" />
-    <img src="./assets/cat-hospitality.png" alt="" width="1" height="1" />
-    <img src="./assets/cat-ecommerce.png" alt="" width="1" height="1" />
-    <img src="./assets/cat-saas.png" alt="" width="1" height="1" />
-    <img src="./assets/cat-custom.png" alt="" width="1" height="1" />
-    <img src="./assets/logo-guarowook.png" alt="" width="1" height="1" />
-    <img src="./assets/logo-coffee-cake.png" alt="" width="1" height="1" />
-    <img src="./assets/logo-brasa.jpg" alt="" width="1" height="1" />
-    <img src="./assets/logo-changan.jpg" alt="" width="1" height="1" />
-    <img src="./assets/logo-jac.jpg" alt="" width="1" height="1" />
-    <img src="./assets/logo-reents.png" alt="" width="1" height="1" />
-    <img src="./assets/team-jorbi.png" alt="" width="1" height="1" />
-    <img src="./assets/team-elis.png" alt="" width="1" height="1" />
-    <img src="./assets/team-abraham.png" alt="" width="1" height="1" />
-    <img src="./assets/team-leandro.png" alt="" width="1" height="1" />
-    <a href="./projects/guarowook.html">g</a>
-    <a href="./projects/coffee-cake.html">c</a>
-    <a href="./projects/brasa.html">b</a>
-    <a href="./projects/changan-360.html">ch</a>
-    <a href="./projects/jac-360.html">j</a>
-    <a href="./projects/rents-brooklyn-queens.html">r</a>
-  </div>
-
-  <div class="bg-layer" aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; overflow:hidden;">
-    <div style="position:absolute; inset:0; background:radial-gradient(circle at 50% 30%, rgba(255,255,255,1) 0%, rgba(248,248,245,.96) 38%, rgba(238,239,235,.92) 100%);"></div>
-    <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(36,30,23,.032) 1px, transparent 1px), linear-gradient(90deg, rgba(36,30,23,.032) 1px, transparent 1px); background-size:64px 64px;"></div>
-    <div style="position:absolute; top:-26vh; left:calc(46% - min(450px,48vw)); width:min(900px,96vw); height:min(900px,96vw); border:1px solid rgba(36,30,23,.055); border-radius:50%; animation:haloDrift 22s ease-in-out infinite alternate;"></div>
-    <div style="position:absolute; bottom:-52vh; left:calc(58% - min(625px,70vw)); width:min(1250px,140vw); height:min(1250px,140vw); border:1px solid rgba(36,30,23,.033); border-radius:50%; animation:haloDrift 26s ease-in-out infinite alternate-reverse;"></div>
-    <div style="position:absolute; inset:0; background:radial-gradient(circle at 50% 22%, rgba(255,255,255,.95) 0%, rgba(255,255,255,0) 46%);"></div>
-    <div style="position:absolute; inset:0; background:radial-gradient(circle at 5% 10%, rgba(58,114,255,.07), transparent 30%), radial-gradient(circle at 95% 90%, rgba(255,166,65,.055), transparent 32%); animation:haloDrift 20s ease-in-out infinite alternate;"></div>
-    <div style="position:absolute; bottom:0; left:0; right:0; height:46%; background:linear-gradient(to top, rgba(36,30,23,.045), rgba(36,30,23,0));"></div>
-    <div style="{{ grainStyle }}"></div>
-  </div>
-
-  <sc-if value="{{ isCategories }}" hint-placeholder-val="{{ true }}">
-    <div class="view view-categories" style="position:absolute; inset:0; display:flex; flex-direction:column; padding:clamp(18px,2.2vw,34px) clamp(20px,3vw,52px); animation:viewIn 520ms cubic-bezier(.22,.8,.2,1) both;">
-      <header class="cat-header" style="display:flex; align-items:center; justify-content:space-between; flex:0 0 auto;">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <div style="width:11px; height:11px; background:#241E17;"></div>
-          <span style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:13px; letter-spacing:-.01em;">HAYAI</span>
-        </div>
-        <div class="nav-actions" style="display:flex; align-items:center; gap:8px;">
-          <button type="button" onClick="{{ goTeam }}" style="cursor:pointer; background:none; border:1px solid #D5D0CA; border-radius:999px; padding:8px 16px; font-size:12px; letter-spacing:.06em; color:#241E17; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#241E17; color:#FBF8F4; border-color:#241E17;">QUIÉNES SOMOS</button>
-          <button type="button" onClick="{{ goContact }}" style="cursor:pointer; background:#241E17; border:1px solid #241E17; border-radius:999px; padding:8px 16px; font-size:12px; letter-spacing:.06em; color:#FBF8F4; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="transform:translateY(-2px);">HABLEMOS</button>
-        </div>
-      </header>
-
-      <div class="cat-center" style="flex:1 1 auto; min-height:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:clamp(20px,3vh,40px); padding-top:clamp(8px,2vh,24px);">
-        <div class="cat-hero" style="text-align:center; max-width:940px; display:flex; flex-direction:column; align-items:center; gap:clamp(8px,1.4vh,16px);">
-          <span style="display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.18em; color:#69625B; border:1px solid #DFDFDA; background:rgba(255,255,255,.7); border-radius:999px; padding:6px 14px;">
-            <span style="width:5px; height:5px; border-radius:50%; background:#EF9D25;"></span>PORTAFOLIO DE SOFTWARE
-          </span>
-          <h1 class="cat-title" style="margin:0; font-family:'Archivo Black', 'Arial Black', Arial, sans-sans-serif; font-weight:400; font-size:clamp(26px,3.6vw,54px); line-height:1.02; letter-spacing:-.04em; text-wrap:pretty;">¿Qué tipo de proyecto quieres implementar en tu negocio?</h1>
-          <p style="margin:0; font-size:clamp(12px,1vw,15px); color:#69625B; line-height:1.5;">Selecciona una categoría y descubre proyectos que ya hemos desarrollado.</p>
-        </div>
-
-        <div class="cat-grid" style="width:min(1220px,100%); flex:0 1 auto; min-height:0; max-height:100%; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); grid-template-rows:repeat(2,minmax(0,1fr)); gap:clamp(10px,1.1vw,18px);">
-          <sc-for list="{{ categories }}" as="cat" hint-placeholder-count="6">
-            <button class="cat-card" type="button" onClick="{{ cat.open }}" onMouseEnter="{{ cat.enter }}" onMouseLeave="{{ cat.leave }}" style="position:relative; overflow:hidden; cursor:pointer; text-align:left; background:rgba(255,255,255,.9); backdrop-filter:blur(8px); border:1px solid #E2E2DD; border-radius:16px; padding:clamp(10px,1.2vw,22px); min-height:0; max-height:100%; display:flex; flex-direction:column; gap:clamp(4px,.7vh,12px); color:#241E17; font-family:'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif; transition:400ms cubic-bezier(.22,.8,.2,1);" style-hover="transform:translateY(-6px); border-color:#241E17; background:#FBF8F4; box-shadow:0 28px 50px -34px rgba(36,30,23,.5);" style-focus-visible="outline:2px solid #241E17; outline-offset:3px;">
-              <span aria-hidden="true" style="position:absolute; top:0; left:0; right:0; height:3px; background:#EF9D25; transform:{{ cat.barScale }}; transform-origin:0 50%; transition:450ms cubic-bezier(.22,.8,.2,1);"></span>
-              <span aria-hidden="true" style="position:absolute; top:clamp(10px,1.1vw,18px); right:clamp(12px,1.3vw,20px); font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(24px,2.6vw,38px); line-height:1; letter-spacing:-.05em; color:{{ cat.numColor }};">{{ cat.num }}</span>
-              <div class="cat-cardtop" style="display:flex; align-items:center; gap:clamp(9px,1.1vw,16px);">
-                <div class="cat-icon" style="flex:0 0 auto; width:clamp(76px,8.4vw,128px); height:clamp(76px,8.4vw,128px); display:flex; align-items:center; justify-content:center; transition:400ms cubic-bezier(.22,.8,.2,1); transform:{{ cat.iconLift }};">
-{{ cat.icon }}
-                </div>
-                <div style="min-width:0;">
-                  <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(13px,1.2vw,19px); letter-spacing:-.03em; line-height:1.12;">{{ cat.title }}</div>
-                  <div style="margin-top:4px; font-size:clamp(10px,.78vw,12.5px); color:#69625B; line-height:1.35; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{{ cat.description }}</div>
-                </div>
-              </div>
-              <div style="margin-top:auto; padding-top:clamp(5px,.8vh,12px); display:flex; align-items:center; justify-content:flex-end; gap:8px; flex:0 0 auto; height:clamp(26px,3.4vh,34px);">
-                <span style="display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 3px 0 9px; border-radius:999px; border:1px solid {{ cat.arrowBorder }}; background:{{ cat.arrowBg }}; color:{{ cat.arrowFg }}; font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:9.5px; letter-spacing:.12em; white-space:nowrap; transition:320ms cubic-bezier(.22,.8,.2,1);">
-                  VER PROYECTOS
-                  <span style="display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:#241E17; color:#FBF8F4; font-size:12px; transition:320ms cubic-bezier(.22,.8,.2,1); transform:{{ cat.arrowRot }};">↗</span>
-                </span>
-              </div>
-            </button>
-          </sc-for>
-        </div>
-      </div>
-    </div>
-  </sc-if>
-
-  <sc-if value="{{ isTeam }}" hint-placeholder-val="{{ false }}">
-    <div class="view view-team" style="position:absolute; inset:0; display:flex; flex-direction:column; padding:clamp(16px,2vw,30px) clamp(20px,3vw,52px) clamp(14px,2vh,26px); animation:viewIn 520ms cubic-bezier(.22,.8,.2,1) both;">
-      <header class="team-header" style="position:relative; z-index:1; flex:0 0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding-bottom:clamp(10px,1.6vh,20px); border-bottom:1px solid #D5D0CA;">
-        <div class="team-headleft" style="display:flex; align-items:center; gap:clamp(14px,2vw,28px);">
-          <button type="button" onClick="{{ goBack }}" style="cursor:pointer; background:#FBF8F4; border:1px solid #D5D0CA; border-radius:999px; padding:8px 16px; font-size:12px; letter-spacing:.06em; color:#241E17; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#241E17; color:#FBF8F4; border-color:#241E17;">← VOLVER</button>
-          <div>
-            <div style="font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.16em; color:#8B857F;">QUIÉNES SOMOS</div>
-            <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(18px,2.1vw,30px); letter-spacing:-.03em; line-height:1.1; margin-top:2px;">El equipo detrás de los proyectos</div>
-          </div>
-        </div>
-        <div class="team-lede" style="text-align:right; max-width:360px; font-size:12px; color:#69625B; line-height:1.5; padding-bottom:4px;">Diseño, producto e ingeniería en un mismo equipo: pensamos el negocio, prototipamos y lo llevamos a producción.</div>
-      </header>
-
-      <div class="team-body" style="flex:1 1 auto; min-height:0; display:flex; align-items:center; justify-content:center; padding:clamp(10px,2vh,26px) 0;">
-        <div class="team-grid" style="width:min(1080px,100%); display:grid; grid-template-columns:repeat(4,1fr); gap:clamp(10px,1.4vw,22px);">
-          <sc-for list="{{ team }}" as="m" hint-placeholder-count="4">
-            <a href="{{ m.url }}" target="_blank" rel="noopener noreferrer" onClick="{{ m.open }}" onMouseEnter="{{ m.enter }}" onMouseLeave="{{ m.leave }}" style="text-decoration:none; color:#241E17; display:flex; flex-direction:column; align-items:center; transition:400ms cubic-bezier(.22,.8,.2,1); transform:{{ m.lift }};">
-              <div style="position:relative; width:100%; border-radius:clamp(14px,1.8vw,22px); background:#241E17; padding:4px; box-shadow:inset 0 0 0 1px rgba(255,255,255,.07);">
-                <span aria-hidden="true" style="position:absolute; top:9px; left:50%; transform:translateX(-50%); width:34px; height:4px; border-radius:3px; background:#26282E; z-index:2;"></span>
-                <div style="position:relative; border-radius:clamp(11px,1.5vw,18px); overflow:hidden; background:#FBF8F4; display:flex; flex-direction:column;">
-                  <div style="position:relative; overflow:hidden; background:{{ m.tint }}; aspect-ratio:3 / 4;">
-                    <div role="img" aria-label="{{ m.name }}" style="{{ m.photoStyle }}"></div>
-                    <span style="position:absolute; left:0; right:0; bottom:0; height:3px; background:{{ m.color }}; transform:{{ m.barScale }}; transform-origin:0 50%; transition:420ms cubic-bezier(.22,.8,.2,1);"></span>
-                  </div>
-                  <div style="padding:clamp(9px,1.2vh,14px) clamp(10px,1vw,14px) clamp(10px,1.3vh,15px); display:flex; flex-direction:column; gap:3px;">
-                    <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(12px,1.05vw,16px); letter-spacing:-.03em; line-height:1.1;">{{ m.name }}</div>
-                    <div style="font-size:clamp(10px,.8vw,12px); color:#69625B;">{{ m.role }}</div>
-                    <div style="margin-top:clamp(6px,.9vh,11px); display:flex; align-items:center; justify-content:space-between; gap:8px;">
-                      <span style="display:flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:{{ m.color }}; color:#FBF8F4;">{{ m.icon }}</span>
-                      <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%; border:1px solid #E4E4DF; font-size:12px; transition:300ms cubic-bezier(.22,.8,.2,1); transform:{{ m.arrowRot }};">↗</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </a>
-          </sc-for>
-        </div>
-      </div>
-
-      <div class="team-cta" style="flex:0 0 auto; display:flex; align-items:center; justify-content:center; gap:14px; padding-top:clamp(8px,1.4vh,18px); border-top:1px solid #E6E1DB;">
-        <span style="font-size:11.5px; color:#69625B;">¿Quieres que trabajemos en tu proyecto?</span>
-        <button type="button" onClick="{{ goContact }}" style="cursor:pointer; height:36px; padding:0 6px 0 16px; border:1px solid #241E17; border-radius:999px; background:#241E17; color:#FBF8F4; font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:11.5px; display:flex; align-items:center; gap:10px; transition:320ms cubic-bezier(.22,.8,.2,1);" style-hover="transform:translateY(-2px);">
-          Hablemos
-          <span style="width:26px; height:26px; border-radius:50%; background:#FBF8F4; color:#241E17; display:flex; align-items:center; justify-content:center; font-size:13px;">→</span>
-        </button>
-      </div>
-    </div>
-  </sc-if>
-
-  <sc-if value="{{ isProjects }}" hint-placeholder-val="{{ false }}">
-    <div class="view view-projects" style="position:absolute; inset:0; display:flex; flex-direction:column; padding:clamp(16px,2vw,30px) clamp(20px,3vw,52px) clamp(14px,2vh,26px); animation:viewIn 520ms cubic-bezier(.22,.8,.2,1) both;">
-      <div class="bg-layer" aria-hidden="true" style="position:absolute; inset:0; pointer-events:none; overflow:hidden;">
-        <div style="position:absolute; inset:0; background:radial-gradient(circle at 50% 28%, rgba(255,255,255,1) 0%, rgba(248,248,245,.96) 40%, rgba(238,239,235,.92) 100%);"></div>
-        <div style="position:absolute; inset:0; background-image:linear-gradient(rgba(36,30,23,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(36,30,23,.03) 1px, transparent 1px); background-size:64px 64px;"></div>
-        <div style="position:absolute; top:-34vh; left:calc(28% - min(500px,54vw)); width:min(1000px,108vw); height:min(1000px,108vw); border:1px solid rgba(36,30,23,.05); border-radius:50%; animation:haloDrift 24s ease-in-out infinite alternate;"></div>
-        <div style="position:absolute; bottom:-56vh; left:calc(74% - min(650px,72vw)); width:min(1300px,144vw); height:min(1300px,144vw); border:1px solid rgba(36,30,23,.03); border-radius:50%; animation:haloDrift 28s ease-in-out infinite alternate-reverse;"></div>
-        <div style="position:absolute; inset:0; background:radial-gradient(circle at 6% 12%, rgba(58,114,255,.06), transparent 30%), radial-gradient(circle at 94% 92%, rgba(255,166,65,.05), transparent 32%);"></div>
-        <div style="position:absolute; bottom:0; left:0; right:0; height:44%; background:linear-gradient(to top, rgba(36,30,23,.04), rgba(36,30,23,0));"></div>
-        <div style="{{ grainStyle }}"></div>
-      </div>
-      <header class="proj-header" style="position:relative; z-index:1; flex:0 0 auto; display:flex; align-items:flex-end; justify-content:space-between; gap:20px; padding-bottom:clamp(10px,1.6vh,20px); border-bottom:1px solid #D5D0CA;">
-        <div class="proj-headleft" style="display:flex; align-items:center; gap:clamp(14px,2vw,28px);">
-          <button type="button" onClick="{{ goBack }}" style="cursor:pointer; background:#FBF8F4; border:1px solid #D5D0CA; border-radius:999px; padding:8px 16px; font-size:12px; letter-spacing:.06em; color:#241E17; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#241E17; color:#FBF8F4; border-color:#241E17;">← VOLVER</button>
-          <div>
-            <div style="display:flex; align-items:center; gap:7px; font-family:'IBM Plex Mono', monospace; font-size:10px; letter-spacing:.16em; color:#8B857F;">
-              <span style="width:6px; height:6px; border-radius:50%; background:#EF9D25;"></span>PROYECTOS
-            </div>
-            <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(18px,2.1vw,30px); letter-spacing:-.03em; line-height:1.1; margin-top:2px;">{{ activeCategory.title }}</div>
-          </div>
-        </div>
-        <div class="proj-count" style="text-align:right; font-size:12px; color:#69625B; padding-bottom:4px;">{{ activeCategory.countLabel }} realizados</div>
-      </header>
-
-      <sc-if value="{{ hasProjects }}" hint-placeholder-val="{{ true }}">
-        <section class="proj-section" style="flex:0 0 auto; position:relative; z-index:1; width:960px; max-width:100%; margin:auto auto 0; padding:clamp(10px,1.6vh,24px) 0 clamp(18px,3vh,40px);">
-          <div class="proj-clip" style="overflow:hidden; padding:12px 2px 16px; margin:-12px -2px -16px;">
-            <div class="proj-track" style="display:flex; align-items:stretch; justify-content:center; gap:20px; transition:transform 550ms cubic-bezier(.22,.8,.2,1); transform:{{ trackShift }};">
-              <sc-for list="{{ visibleProjects }}" as="p" hint-placeholder-count="3">
-                <div class="proj-item" style="flex:0 0 calc((100% - 40px) / 3); display:flex; align-items:stretch; animation:fadeUp 460ms cubic-bezier(.22,.8,.2,1) both;">
-                  <div role="button" tabindex="0" onClick="{{ p.open }}" onKeyDown="{{ p.key }}" onMouseEnter="{{ p.enter }}" onMouseLeave="{{ p.leave }}" style="cursor:pointer; width:100%; display:flex; flex-direction:column; align-items:center; background:transparent; border:none; transition:420ms cubic-bezier(.22,.8,.2,1); transform:{{ p.cardLift }};" style-focus-visible="outline:2px solid #241E17; outline-offset:6px;">
-                    <div style="position:relative; width:100%; border-radius:clamp(6px,.9vh,10px); background:#241E17; padding:4px 4px 7px; box-shadow:{{ p.tabletShadow }}; display:flex; transition:420ms cubic-bezier(.22,.8,.2,1);">
-                      <div style="position:relative; width:100%; border-radius:3px; overflow:hidden; background:#FBF8F4; display:flex; flex-direction:column;">
-                        <div style="flex:0 0 auto; position:relative; height:clamp(48px,6.4vh,124px); overflow:hidden; background:{{ p.logoBg }}; display:flex; align-items:center; justify-content:center;">
-                          <sc-if value="{{ p.hasLogo }}" hint-placeholder-val="{{ false }}">
-                            <div role="img" aria-label="{{ p.title }}" style="{{ p.logoStyle }}"></div>
-                          </sc-if>
-                          <sc-if value="{{ p.noLogo }}" hint-placeholder-val="{{ true }}">
-                            <span style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; color:#FBF8F4; font-size:clamp(14px,2vh,22px); letter-spacing:.06em; text-transform:uppercase; text-align:center; padding:0 18px; line-height:1.1;">{{ p.title }}</span>
-                          </sc-if>
-                          <div style="position:absolute; inset:0; background:{{ p.overlay }}; transition:320ms ease;"></div>
-                        </div>
-                        <div style="flex:1 1 auto; min-height:0; padding:clamp(7px,1vh,14px) clamp(10px,1.2vw,16px) clamp(8px,1.1vh,15px); display:flex; flex-direction:column; gap:clamp(3px,.5vh,6px); background:#FBF8F4;">
-                          <div style="display:flex; align-items:center; gap:7px; font-size:8.5px; letter-spacing:.16em; color:#8B857F;">
-                            <span style="width:5px; height:5px; border-radius:50%; background:{{ p.accent }};"></span>{{ p.type }}
-                          </div>
-                          <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(13px,1.15vw,18px); letter-spacing:-.03em; line-height:1.1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ p.title }}</div>
-                          <div style="font-size:clamp(10px,.78vw,12px); color:#69625B; line-height:1.4; height:2.8em; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">{{ p.description }}</div>
-                          <div style="margin-top:auto; display:flex; align-items:center; justify-content:center; gap:9px; height:clamp(30px,3.8vh,42px); border-radius:999px; background:#241E17; color:#FBF8F4; border:1px solid #241E17; font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(10px,.8vw,12px); letter-spacing:.02em; transition:320ms cubic-bezier(.22,.8,.2,1);">
-                            {{ p.btnLabel }}
-                            <span style="display:inline-block; font-size:13px; transition:320ms cubic-bezier(.22,.8,.2,1); transform:{{ p.arrowRot }};">↗</span>
-                          </div>
-                        </div>
-                      </div>
-                      <span aria-hidden="true" style="position:absolute; bottom:2.5px; left:50%; transform:translateX(-50%); width:12px; height:1px; border-radius:1px; background:#33353B;"></span>
-                    </div>
-                    <span aria-hidden="true" style="width:12px; height:5px; background:#1B1C21;"></span>
-                    <span aria-hidden="true" style="width:44px; height:2px; border-radius:0 0 3px 3px; background:#241E17;"></span>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-          <sc-if value="{{ showArrows }}" hint-placeholder-val="{{ false }}">
-            <div class="proj-arrows">
-              <button type="button" onClick="{{ prev }}" aria-label="Anterior" style="cursor:pointer; position:absolute; left:clamp(-42px,-2.4vw,-16px); top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:1px solid #D5D0CA; background:#FBF8F4; font-size:16px; color:#241E17; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#241E17; color:#FBF8F4; border-color:#241E17;">←</button>
-              <button type="button" onClick="{{ next }}" aria-label="Siguiente" style="cursor:pointer; position:absolute; right:clamp(-42px,-2.4vw,-16px); top:50%; transform:translateY(-50%); width:40px; height:40px; border-radius:50%; border:1px solid #D5D0CA; background:#FBF8F4; font-size:16px; color:#241E17; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#241E17; color:#FBF8F4; border-color:#241E17;">→</button>
-            </div>
-          </sc-if>
-        </section>
-      </sc-if>
-
-      <sc-if value="{{ isEmptyCategory }}" hint-placeholder-val="{{ false }}">
-        <section style="position:relative; z-index:1; flex:0 0 auto; padding:clamp(16px,3vh,34px) 0; text-align:center; animation:fadeUp 400ms ease both;">
-          <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(16px,1.7vw,24px); letter-spacing:-.02em; line-height:1.2;">Todavía no hemos publicado un caso en esta categoría.</div>
-          <div style="margin-top:8px; font-size:clamp(12px,1vw,14px); color:#69625B;">Pero podemos hacer que el primero sea el tuyo.</div>
-        </section>
-      </sc-if>
-
-      <div class="form-wrap" style="position:relative; z-index:1; flex:0 1 auto; min-height:0; margin-bottom:auto; overflow:hidden; display:flex; justify-content:center; align-items:flex-start; padding:0 0 clamp(6px,1vh,16px);">
-        <form class="lead-form" onSubmit="{{ submit }}" style="width:min(1000px,100%); max-height:100%; overflow:hidden; background:transparent; border:none; border-radius:0; padding:0; display:flex; flex-direction:column; gap:clamp(8px,1.3vh,18px);">
-          <div style="display:flex; flex-direction:column; gap:clamp(2px,.4vh,6px);">
-            <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(17px,2vw,32px); line-height:.98; letter-spacing:-.045em;">¿TIENES UN PROYECTO SIMILAR?</div>
-            <div style="font-size:clamp(11.5px,.95vw,14px); color:#69625B; line-height:1.35;">Hagámoslo realidad.</div>
-            <input name="type" readOnly="{{ true }}" value="{{ activeCategory.title }}" tabindex="-1" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;" />
-          </div>
-
-          <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-            <div style="display:flex; align-items:center; gap:8px; height:clamp(34px,4.4vh,48px); padding:0 14px; border:1px solid rgba(0,0,0,.14); border-radius:10px; background:#FBF8F4; transition:200ms;" style-focus-within="border-color:#241E17;">
-              <span aria-hidden="true" style="flex:0 0 auto; font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif; font-size:15px; line-height:1;">{{ dialFlag }}</span>
-              <select name="dial" value="{{ dialValue }}" onChange="{{ onDial }}" aria-label="Código de país" style="flex:0 0 auto; appearance:none; border:none; background:transparent; padding:0 13px 0 0; margin:0; font-size:13.5px; color:#241E17; cursor:pointer; background-image:linear-gradient(45deg,transparent 50%,#241E17 50%),linear-gradient(135deg,#241E17 50%,transparent 50%); background-position:calc(100% - 6px) 55%, calc(100% - 2px) 55%; background-size:4px 4px, 4px 4px; background-repeat:no-repeat;" style-focus="outline:none;">
-                <sc-for list="{{ dialCodes }}" as="d" hint-placeholder-count="6">
-                  <option value="{{ d.value }}">{{ d.value }}</option>
-                </sc-for>
-              </select>
-              <input name="phone" type="tel" inputmode="tel" placeholder="Tu teléfono" aria-label="Teléfono" style="flex:1 1 auto; min-width:0; border:none; background:transparent; padding:0; font-size:13.5px; color:#241E17;" style-focus="outline:none;" />
-            </div>
-            <div style="display:flex; align-items:center; height:clamp(34px,4.4vh,48px); padding:0 14px; border:1px solid rgba(0,0,0,.14); border-radius:10px; background:#FBF8F4; transition:200ms;" style-focus-within="border-color:#241E17;">
-              <input name="email" type="email" placeholder="Tu correo" aria-label="Correo" style="flex:1 1 auto; min-width:0; border:none; background:transparent; padding:0; font-size:13.5px; color:#241E17;" style-focus="outline:none;" />
-            </div>
-          </div>
-
-          <textarea name="idea" placeholder="Cuéntanos brevemente tu idea..." aria-label="Tu idea" style="flex:0 0 auto; height:clamp(50px,8vh,104px); resize:none; border:1px solid rgba(0,0,0,.14); border-radius:10px; background:#FBF8F4; padding:11px 14px; font-size:13.5px; line-height:1.5; color:#241E17; transition:200ms;" style-focus="outline:none; border-color:#241E17;"></textarea>
-
-          <sc-if value="{{ formError }}" hint-placeholder-val="{{ false }}">
-            <div style="font-size:11.5px; color:#B6322B; animation:fadeUp 200ms ease both;">{{ formError }}</div>
-          </sc-if>
-          <sc-if value="{{ formSent }}" hint-placeholder-val="{{ false }}">
-            <div style="font-size:12px; color:#241E17; border:1px solid #241E17; border-radius:10px; padding:8px 12px; animation:fadeUp 240ms ease both;">Gracias. Cuéntanos un poco más y nos pondremos en contacto.</div>
-          </sc-if>
-
-          <button type="submit" style="cursor:pointer; flex:0 0 auto; width:100%; height:clamp(40px,5.4vh,52px); padding:0 clamp(16px,1.6vw,22px); border:none; border-radius:12px; background:#241E17; color:#FBF8F4; font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; font-size:clamp(11.5px,1vw,14px); letter-spacing:.02em; display:flex; align-items:center; justify-content:space-between; transition:260ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#16110B; transform:translateY(-2px);">
-            HABLEMOS DE TU PROYECTO
-            <span style="font-size:16px;">→</span>
-          </button>
-        </form>
-      </div>
-    </div>
-  </sc-if>
-
-  <sc-if value="{{ hasActiveProject }}" hint-placeholder-val="{{ false }}">
-    <div class="viewer-overlay" style="position:fixed; inset:0; width:100vw; height:100dvh; z-index:9999; background:rgba(14,14,13,.62); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; padding:clamp(10px,2vh,28px) clamp(10px,2vw,34px); animation:fadeIn 300ms ease both;">
-      <div onClick="{{ closeProject }}" style="position:absolute; inset:0;"></div>
-      <div class="viewer-dialog" role="dialog" aria-modal="true" style="position:relative; width:min(1440px,100%); height:min(1000px,100%); background:#FBF8F4; border:1px solid rgba(255,255,255,.24); border-radius:10px; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 60px 120px -50px rgba(0,0,0,.7); animation:viewerIn 480ms cubic-bezier(.22,.8,.2,1) both;">
-        <div class="viewer-bar" style="flex:0 0 auto; height:clamp(46px,6vh,58px); display:flex; align-items:center; justify-content:space-between; gap:16px; padding:0 clamp(10px,1.2vw,18px); border-bottom:1px solid #E6E6E2; background:#FBF8F4;">
-          <div class="viewer-barleft" style="display:flex; align-items:center; gap:clamp(10px,1.2vw,18px); min-width:0;">
-            <button class="viewer-back" type="button" onClick="{{ closeProject }}" style="cursor:pointer; border:1px solid #241E17; background:#241E17; color:#FBF8F4; border-radius:999px; height:30px; padding:0 14px; font-size:11px; letter-spacing:.08em; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#FBF8F4; color:#241E17;">← VOLVER A PROYECTOS</button>
-            <span class="viewer-label" style="font-size:12px; color:#69625B; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">{{ activeProject.label }}</span>
-          </div>
-          <div class="viewer-barright" style="display:flex; align-items:center; gap:8px;">
-            <sc-if value="{{ showViewerNav }}" hint-placeholder-val="{{ false }}">
-              <div style="display:flex; gap:4px;">
-                <button type="button" onClick="{{ prevProject }}" aria-label="Proyecto anterior" style="cursor:pointer; border:1px solid #D5D0CA; background:#FBF8F4; color:#241E17; border-radius:999px; height:30px; padding:0 12px; font-size:11px; transition:220ms;" style-hover="border-color:#241E17; background:#F2F2EF;">← Anterior</button>
-                <button type="button" onClick="{{ nextProject }}" aria-label="Proyecto siguiente" style="cursor:pointer; border:1px solid #D5D0CA; background:#FBF8F4; color:#241E17; border-radius:999px; height:30px; padding:0 12px; font-size:11px; transition:220ms;" style-hover="border-color:#241E17; background:#F2F2EF;">Siguiente →</button>
-              </div>
-            </sc-if>
-            <button type="button" onClick="{{ closeProject }}" aria-label="Cerrar proyecto" style="cursor:pointer; width:30px; height:30px; border-radius:50%; border:1px solid #D5D0CA; background:#FBF8F4; color:#241E17; font-size:14px; line-height:1; transition:220ms cubic-bezier(.22,.8,.2,1);" style-hover="background:#241E17; color:#FBF8F4; border-color:#241E17;">×</button>
-          </div>
-        </div>
-        <div ref="{{ frameHostRef }}" style="flex:1 1 auto; min-height:0; width:100%; overflow:hidden; position:relative; background:#FBF8F4;">
-          <iframe src="{{ activeProject.file }}" title="Case study" ref="{{ frameRef }}" style="{{ frameStyle }}"></iframe>
-          <sc-if value="{{ isLoading }}" hint-placeholder-val="{{ true }}">
-            <div style="position:absolute; inset:0; z-index:3; background:#16110B; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:26px; animation:fadeIn 200ms ease both;">
-              <div style="position:relative; width:96px; height:96px; display:flex; align-items:center; justify-content:center;">
-                <span style="position:absolute; inset:0; border-radius:50%; border:1px solid rgba(255,255,255,.12);"></span>
-                <span style="position:absolute; inset:0; border-radius:50%; border:1px solid transparent; border-top-color:#FBF8F4; animation:ringSpin 1050ms linear infinite;"></span>
-                <span style="position:absolute; inset:16px; border-radius:50%; border:1px solid transparent; border-bottom-color:rgba(255,255,255,.45); animation:ringSpin 1600ms linear infinite reverse;"></span>
-                <span style="width:9px; height:9px; border-radius:50%; background:#FBF8F4; animation:pulseDot 1400ms ease-in-out infinite;"></span>
-              </div>
-              <div style="text-align:center; display:flex; flex-direction:column; align-items:center; gap:10px;">
-                <div style="font-family:'Archivo Black', 'Arial Black', Arial, sans-serif; color:#FBF8F4; font-size:15px; letter-spacing:.1em; text-transform:uppercase;">{{ activeProject.title }}</div>
-                <div style="font-size:10.5px; letter-spacing:.24em; color:rgba(255,255,255,.45);">CARGANDO EXPERIENCIA</div>
-                <div style="position:relative; width:180px; height:1px; background:rgba(255,255,255,.16); overflow:hidden;">
-                  <span style="position:absolute; top:0; left:0; width:33%; height:100%; background:#FBF8F4; animation:barSweep 1200ms cubic-bezier(.5,0,.5,1) infinite;"></span>
-                </div>
-              </div>
-            </div>
-          </sc-if>
-        </div>
-      </div>
-    </div>
-  </sc-if>
-</div>
-</x-dc>
-<script type="text/x-dc" data-dc-script data-props="{}">
-const CATEGORIES = [
-  { id: "pos", title: "Sistema de Comandas", description: "Ventas, comandas y administración." },
-  { id: "showrooms", title: "Concesionario Virtual", description: "Experiencias interactivas e inmersivas." },
-  { id: "hospitality", title: "Hotelería & Reservas", description: "Reservas, disponibilidad y administración." },
-  { id: "ecommerce", title: "Tienda Online", description: "Catálogos y experiencias de compra." },
-  { id: "saas", title: "Plataformas SaaS", description: "Herramientas digitales para operar negocios." },
-  { id: "custom", title: "Software a medida", description: "Productos creados alrededor de una necesidad específica." }
-];
-
-// Añadir un proyecto = añadir un objeto aquí. file:null => card "Próximamente".
-const PROJECTS = [
-  { id: "guarowook", title: "GuaroWook", category: "pos", type: "Sistema de Comandas", file: "./projects/guarowook.html", description: "Sistema de comandas y operación para restaurante.", accent: "#1A1413", logo: "./assets/logo-guarowook.png" },
-  { id: "coffee-cake", title: "Coffee & Cake", category: "pos", type: "Comandas Cafetería", file: "./projects/coffee-cake.html", description: "Sistema operativo para cafetería de especialidad.", accent: "#6B4A2F", logo: "./assets/logo-coffee-cake.png" },
-  { id: "brasa", title: "BRASA", category: "pos", type: "Comandas Restaurante", file: "./projects/brasa.html", description: "Operación integral para restaurante.", accent: "#3A1D15", logo: "./assets/logo-brasa.jpg" },
-  { id: "changan", title: "Changan 360°", category: "showrooms", type: "Concesionario Virtual", file: "./projects/changan-360.html", description: "Experiencia automotriz inmersiva en 360°.", accent: "#0E2A5C", logo: "./assets/logo-changan.jpg" },
-  { id: "jac", title: "JAC 360°", category: "showrooms", type: "Concesionario Virtual", file: "./projects/jac-360.html", description: "Showroom inmersivo de vehículos JAC.", accent: "#241E17", logo: "./assets/logo-jac.jpg" },
-  { id: "rents-brooklyn-queens", title: "Rents Brooklyn Queens", category: "hospitality", type: "Hospitality Platform", file: "./projects/rents-brooklyn-queens.html", description: "Plataforma de hotelería y reservas.", accent: "#5E1626", logo: "./assets/logo-reents.png" }
-];
-
-const h = React.createElement;
-let SVG_SIZE = 42;
-const svg = (children) => h("svg", { width: SVG_SIZE, height: SVG_SIZE, viewBox: "0 0 42 42", fill: "none", stroke: "currentColor", strokeWidth: SVG_SIZE > 20 ? 1.2 : 2, strokeLinecap: "round", strokeLinejoin: "round" }, children);
-const makeIcons = () => ({
-  pos: svg([
-    h("rect", { key: "a", x: 3, y: 4, width: 17, height: 25, rx: 1 }),
-    h("path", { key: "b", d: "M7 10h9M7 15h9M7 20h5" }),
-    h("rect", { key: "c", x: 24, y: 14, width: 15, height: 15, rx: 1 }),
-    h("path", { key: "d", d: "M24 21.5h15M31.5 14v15" })
-  ]),
-  showrooms: svg([
-    h("circle", { key: "a", cx: 21, cy: 21, r: 15 }),
-    h("path", { key: "b", d: "M6 21c0 3.3 6.7 6 15 6s15-2.7 15-6" }),
-    h("path", { key: "c", d: "M12 24l3-6h12l3 6" }),
-    h("path", { key: "d", d: "M33 12l3 1-1 3" })
-  ]),
-  hospitality: svg([
-    h("rect", { key: "a", x: 4, y: 6, width: 15, height: 30, rx: 1 }),
-    h("path", { key: "b", d: "M8 11h3M8 16h3M8 21h3" }),
-    h("path", { key: "c", d: "M23 36v-8h16v8" }),
-    h("path", { key: "d", d: "M23 28v-4h6v4" })
-  ]),
-  ecommerce: svg([
-    h("path", { key: "a", d: "M8 13h26l-2.5 22H10.5L8 13Z" }),
-    h("path", { key: "b", d: "M15 13a6 6 0 0 1 12 0" }),
-    h("path", { key: "c", d: "M15 21h12M15 27h8" })
-  ]),
-  saas: svg([
-    h("rect", { key: "a", x: 4, y: 7, width: 34, height: 26, rx: 2 }),
-    h("path", { key: "b", d: "M4 14h34" }),
-    h("path", { key: "c", d: "M11 28v-6M18 28v-9M25 28v-4M32 28v-8" })
-  ]),
-  custom: svg([
-    h("path", { key: "a", d: "M13 10 6 21l7 11M29 10l7 11-7 11" }),
-    h("circle", { key: "b", cx: 21, cy: 14, r: 3 }),
-    h("circle", { key: "c", cx: 21, cy: 28, r: 3 }),
-    h("path", { key: "d", d: "M21 17v8" })
-  ])
-});
-// Iconos 3D reales (Microsoft Fluent Emoji, MIT) servidos por jsDelivr.
-const ICON3D_FILE = { pos: "./assets/cat-pos.png", showrooms: "./assets/cat-showrooms.png", hospitality: "./assets/cat-hospitality.png", ecommerce: "./assets/cat-ecommerce.png", saas: "./assets/cat-saas.png", custom: "./assets/cat-custom.png" };
-const icon3d = (id) => h("img", {
-  src: ICON3D_FILE[id], alt: "", width: 64, height: 64,
-  style: { width: "100%", height: "100%", objectFit: "contain", display: "block", filter: "drop-shadow(0 6px 10px rgba(36,30,23,.22))" }
-});
-const ICONS3D = { pos: icon3d("pos"), showrooms: icon3d("showrooms"), hospitality: icon3d("hospitality"), ecommerce: icon3d("ecommerce"), saas: icon3d("saas"), custom: icon3d("custom") };
-const ICONS = makeIcons();
-SVG_SIZE = 15;
-const ICONS_SM = makeIcons();
-SVG_SIZE = 42;
-const CAT_COLORS = ["#26502F", "#7B2233", "#C79318", "#1E3A6E", "#26502F", "#7B2233"];
-const SOCIAL_ICONS = {
-  linkedin: h("svg", { width: 14, height: 14, viewBox: "0 0 24 24", fill: "currentColor" }, [
-    h("path", { key: "a", d: "M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm7 0h3.8v1.7h.05c.53-.95 1.83-1.95 3.77-1.95C21.4 8.75 22 11.1 22 14.1V21h-4v-6.1c0-1.46-.03-3.34-2.05-3.34-2.05 0-2.36 1.6-2.36 3.24V21h-4V9Z" })
-  ]),
-  facebook: h("svg", { width: 14, height: 14, viewBox: "0 0 24 24", fill: "currentColor" }, [
-    h("path", { key: "a", d: "M13.5 21v-8h2.7l.4-3.1h-3.1V7.9c0-.9.25-1.5 1.55-1.5h1.65V3.63c-.29-.04-1.27-.13-2.42-.13-2.4 0-4.03 1.46-4.03 4.15V9.9H7.5V13h2.75v8h3.25Z" })
-  ])
-};
-const TEAM = [
-  { id: "jorbi", name: "Jorbi Nogales", role: "Producto & Estrategia", network: "LINKEDIN", url: "https://www.linkedin.com/in/jorbi-nogales/", photo: "./assets/team-jorbi.png", color: "#1E3A6E", tint: "#EEF1F7" },
-  { id: "elis", name: "Elis Pérez", role: "Desarrollo & Integraciones", network: "FACEBOOK", url: "https://www.facebook.com/elisxavier.perez", photo: "./assets/team-elis.png", color: "#C79318", tint: "#F8F3E7" },
-  { id: "abraham", name: "Abraham Freitez", role: "Diseño de Producto", network: "LINKEDIN", url: "https://www.linkedin.com/in/abraham-freitez/", photo: "./assets/team-abraham.png", color: "#7B2233", tint: "#F7EEF0" },
-  { id: "leandro", name: "Leandro Guzmán", role: "Ingeniería & Arquitectura", network: "LINKEDIN", url: "https://www.linkedin.com/in/leandrogzn/", photo: "./assets/team-leandro.png", color: "#26502F", tint: "#EDF2EE" }
-];
-const DIAL_CODES = [
-  { value: "+58", label: "🇻🇪 +58" }, { value: "+1", label: "🇺🇸 +1" }, { value: "+57", label: "🇨🇴 +57" },
-  { value: "+52", label: "🇲🇽 +52" }, { value: "+507", label: "🇵🇦 +507" }, { value: "+34", label: "🇪🇸 +34" },
-  { value: "+51", label: "🇵🇪 +51" }, { value: "+56", label: "🇨🇱 +56" }, { value: "+54", label: "🇦🇷 +54" },
-  { value: "+593", label: "🇪🇨 +593" }, { value: "+1809", label: "🇩🇴 +1809" }, { value: "+55", label: "🇧🇷 +55" }
-];
-const FORM_TITLES = {
-  pos: "¿Qué necesitas para tu restaurante?",
-  showrooms: "¿Qué necesitas para tu concesionario?",
-  hospitality: "¿Qué necesitas para tu hotel?",
-  ecommerce: "¿Qué necesitas para tu tienda?",
-  saas: "¿Qué necesitas para tu operación?",
-  custom: "¿Qué necesitas construir?"
-};
-const GRAIN_SVG = encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='160' height='160' filter='url(#g)' opacity='0.55'/></svg>");
-const GRAIN_STYLE = {
-  position: "absolute", inset: 0, opacity: 0.032, pointerEvents: "none",
-  backgroundImage: "url(\"data:image/svg+xml," + GRAIN_SVG + "\")",
-  backgroundSize: "160px 160px"
-};
-const CHIP_LABELS = { pos: "Comandas", showrooms: "Concesionario", hospitality: "Hotelería", ecommerce: "Tienda Online", saas: "SaaS", custom: "A medida" };
-
-async function submitLead(data) {
-  // CONNECT API HERE
-  return { ok: true, data };
-}
-
-class Component extends DCLogic {
-  state = { view: "categories", selectedCategory: null, activeProject: null, carouselIndex: 0, hovered: null, formError: null, formSent: false, frameBox: null, types: null, loading: false };
-  MIN_LOADER = 1400;
-
-  async resolveSrc(file) {
-    const name = file.replace(/^\.?\//, "");
-    const self = location.href.split("#")[0].split("?")[0];
-    const candidates = this.baseCandidates().map((b) => b + name);
-    for (const url of candidates) {
-      try {
-        if (url.split("#")[0].split("?")[0] === self) continue;
-        const r = await fetch(url, { method: "GET" });
-        if (!r.ok) continue;
-        if (r.url.split("#")[0].split("?")[0] === self) continue;
-        const txt = await r.text();
-        if (!/<html|<!doctype/i.test(txt.slice(0, 400))) continue;
-        return url;
-      } catch (e) { /* try next */ }
-    }
-    return candidates[0];
-  }
-
-  startLoader() {
-    clearTimeout(this._loadT);
-    this._loadedAt = null;
-    this._loadStart = Date.now();
-    this.setState({ loading: true });
-  }
-
-  loadProject(p) {
-    this.startLoader();
-    this.setState({ activeProject: p.id, activeSrc: null });
-    this.resolveSrc(p.file).then((url) => {
-      if (this.state.activeProject === p.id) this.setState({ activeSrc: url });
-    });
-  }
-  frameLoaded() {
-    const wait = Math.max(0, this.MIN_LOADER - (Date.now() - (this._loadStart || 0)));
-    clearTimeout(this._loadT);
-    this._loadT = setTimeout(() => this.setState({ loading: false }), wait);
-  }
-  frameHostRef = React.createRef();
-  DESIGN_WIDTH = 1440;
-
-  measureFrame() {
-    const el = this.frameHostRef.current;
-    if (!el) {
-      if (this.state.frameBox) this.setState({ frameBox: null });
-      return;
-    }
-    // clientWidth/Height: no lo afecta el transform de la animación de entrada del modal
-    const w = el.clientWidth, hgt = el.clientHeight;
-    const b = this.state.frameBox;
-    if (!b || b.w !== w || b.h !== hgt) this.setState({ frameBox: { w, h: hgt } });
-  }
-
-  // El case study maqueta a 100vw: si aparece su scrollbar vertical, 100vw excede
-  // el ancho visible y genera scroll horizontal. Lo neutralizamos dentro del frame.
-  patchFrame(e) {
-    const f = e.currentTarget;
-    try {
-      const d = f.contentDocument;
-      if (!d) return;
-      let st = d.getElementById("__om_no_hscroll");
-      if (!st) {
-        st = d.createElement("style");
-        st.id = "__om_no_hscroll";
-        // Solo en html: body sigue sin overflow propio, así el documento sigue
-        // siendo el scroller y los listeners de scroll del case study funcionan.
-        st.textContent = "html{overflow-x:hidden !important;}";
-        (d.head || d.documentElement).appendChild(st);
-      }
-    } catch (err) { /* cross-origin: sin parche, el iframe conserva su comportamiento */ }
-  }
-
-  componentDidUpdate() {
-    const el = this.frameHostRef.current;
-    if (el && !this._ro) {
-      this._ro = new ResizeObserver(() => this.measureFrame());
-      this._ro.observe(el);
-    }
-    if (!el && this._ro) { this._ro.disconnect(); this._ro = null; }
-    this.measureFrame();
-  }
-
-  baseCandidates() {
-    const clean = (u) => String(u).split("#")[0].split("?")[0].replace(/[^/]*$/, "");
-    return [clean(document.baseURI), clean(location.href), location.origin + "/"].filter((v, i, a) => a.indexOf(v) === i);
-  }
-
-  resolveImages() {
-    const names = TEAM.map((m) => m.photo).concat(PROJECTS.filter((p) => p.logo).map((p) => p.logo));
-    const bases = this.baseCandidates();
-    names.forEach((file) => {
-      const name = file.replace(/^\.?\//, "");
-      let i = 0;
-      const tryNext = () => {
-        if (i >= bases.length) return;
-        const url = bases[i++] + name;
-        const img = new Image();
-        img.onload = () => this.setState((st) => ({ imgMap: Object.assign({}, st.imgMap, { [file]: url }) }));
-        img.onerror = tryNext;
-        img.src = url;
-      };
-      tryNext();
-    });
-  }
-
-  imgUrl(file) { return (this.state.imgMap && this.state.imgMap[file]) || file; }
-
-  componentDidMount() {
-    this.resolveImages();
-    this._key = (e) => { if (e.key === "Escape" && this.state.activeProject) this.close(); };
-    this._pop = () => this.fromHash();
-    window.addEventListener("keydown", this._key);
-    window.addEventListener("popstate", this._pop);
-    this.fromHash();
-  }
-  componentWillUnmount() {
-    window.removeEventListener("keydown", this._key);
-    window.removeEventListener("popstate", this._pop);
-  }
-
-  fromHash() {
-    const parts = (location.hash || "").replace(/^#\/?/, "").split("/").filter(Boolean);
-    if (parts[0] === "equipo") return this.setState({ view: "team", activeProject: null });
-    const cat = CATEGORIES.find((c) => c.id === parts[0]);
-    if (!cat) return this.setState({ view: "categories", selectedCategory: null, activeProject: null });
-    const proj = PROJECTS.find((p) => p.id === parts[1] && p.file);
-    if (proj && proj.id !== this.state.activeProject) {
-      this.setState({ view: "projects", selectedCategory: cat.id });
-      return this.loadProject(proj);
-    }
-    this.setState({ view: "projects", selectedCategory: cat.id, activeProject: proj ? proj.id : null });
-  }
-  push(hash) {
-    if (location.hash !== hash) history.pushState({}, "", hash || location.pathname + location.search);
-  }
-
-  projectsOf(catId) { return PROJECTS.filter((p) => p.category === catId); }
-
-  selectedTypes() {
-    if (this.state.types) return this.state.types;
-    return this.state.selectedCategory ? [this.state.selectedCategory] : [];
-  }
-
-  openCategory(id) {
-    const cat = CATEGORIES.find((c) => c.id === id);
-    this.setState({ view: "projects", selectedCategory: id, carouselIndex: 0, hovered: null, formError: null, formSent: false, types: null });
-    this.push("#" + id);
-  }
-  back() {
-    this.setState({ view: "categories", selectedCategory: null, activeProject: null, hovered: null });
-    this.push("");
-  }
-  openProject(p) {
-    if (!p.file) return;
-    this.loadProject(p);
-    this.push("#" + p.category + "/" + p.id);
-  }
-  close() {
-    const cat = this.state.selectedCategory;
-    this.setState({ activeProject: null });
-    this.push(cat ? "#" + cat : "");
-  }
-  step(dir) {
-    const list = this.projectsOf(this.state.selectedCategory).filter((p) => p.file);
-    if (!list.length) return;
-    const i = list.findIndex((p) => p.id === this.state.activeProject);
-    const nxt = list[(i + dir + list.length) % list.length];
-    this.loadProject(nxt);
-    this.push("#" + nxt.category + "/" + nxt.id);
-  }
-
-  onSubmit(e) {
-    e.preventDefault();
-    const f = e.target.elements;
-    const types = this.state.selectedCategory ? [this.state.selectedCategory] : [];
-    const data = { phone: (f.dial.value + " " + f.phone.value.trim()).trim(), email: f.email.value.trim(), types: types.map((id) => CATEGORIES.find((c) => c.id === id).title), idea: f.idea.value.trim() };
-    if (!types.length) return this.setState({ formError: "Selecciona al menos un tipo de proyecto.", formSent: false });
-    if (!data.phone || !data.email || !data.idea) return this.setState({ formError: "Completa teléfono, correo e idea del proyecto.", formSent: false });
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(data.email)) return this.setState({ formError: "Revisa el formato del correo.", formSent: false });
-    submitLead(data);
-    e.target.reset();
-    this.setState({ formError: null, formSent: true });
-  }
-
-  renderVals() {
-    const s = this.state;
-    const catList = CATEGORIES.map((c, i) => {
-      const n = this.projectsOf(c.id).length;
-      return {
-        ...c,
-        num: String(i + 1).padStart(2, "0"),
-        icon: ICONS3D[c.id],
-        iconLift: s.hovered === c.id ? "translateY(-4px) scale(1.06)" : "none",
-        countLabel: n === 1 ? "1 proyecto" : n + " proyectos",
-        isHovered: s.hovered === c.id,
-        notHovered: s.hovered !== c.id,
-        color: CAT_COLORS[i % CAT_COLORS.length],
-        numColor: "rgba(36,30,23,.8)",
-        tint: CAT_COLORS[i % CAT_COLORS.length] + "14",
-        tintBorder: CAT_COLORS[i % CAT_COLORS.length] + "33",
-        arrowDiscBg: s.hovered === c.id ? "#FBF8F4" : CAT_COLORS[i % CAT_COLORS.length],
-        arrowDiscFg: s.hovered === c.id ? "#241E17" : "#FBF8F4",
-        barScale: s.hovered === c.id ? "scaleX(1)" : "scaleX(0)",
-        iconShift: s.hovered === c.id ? "translateY(-3px)" : "none",
-        arrowRot: s.hovered === c.id ? "rotate(45deg)" : "none",
-        arrowBg: s.hovered === c.id ? "#241E17" : "transparent",
-        arrowFg: s.hovered === c.id ? "#FBF8F4" : "#241E17",
-        arrowBorder: s.hovered === c.id ? "#241E17" : "#E0E0DB",
-        open: () => this.openCategory(c.id),
-        enter: () => this.setState({ hovered: c.id }),
-        leave: () => this.setState({ hovered: null })
-      };
-    });
-
-    const activeCategory = catList.find((c) => c.id === s.selectedCategory) || { title: "", countLabel: "", color: "#241E17" };
-    activeCategory.wash = "radial-gradient(120% 90% at 50% -10%, " + activeCategory.color + "10 0%, " + activeCategory.color + "24 55%, " + activeCategory.color + "3D 100%)";
-    activeCategory.halo = "radial-gradient(circle at 50% 50%, " + activeCategory.color + "40, " + activeCategory.color + "00 70%)";
-    const list = s.view === "projects" ? this.projectsOf(s.selectedCategory) : [];
-    const visibleProjects = list.map((p) => {
-      const hov = s.hovered === "p:" + p.id && !!p.file;
-      return {
-      ...p,
-      hasFile: !!p.file,
-      hasLogo: !!p.logo,
-      noLogo: !p.logo,
-      logoBg: p.logo ? "#FBF8F4" : p.accent,
-      logoStyle: p.logo ? { width: "100%", height: "100%", backgroundImage: "url('" + this.imgUrl(p.logo) + "')", backgroundRepeat: "no-repeat", backgroundPosition: "center", backgroundSize: "contain" } : null,
-      cta: p.file ? "VER PROYECTO ↗" : "PRÓXIMAMENTE",
-      isHovered: hov,
-      monogram: p.title.split(/[^A-Za-zÁÉÍÓÚÑ0-9]+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join(""),
-      cardLift: hov ? "translateY(-6px)" : "none",
-      tabletShadow: "inset 0 0 0 1px rgba(255,255,255,.07)",
-      overlay: hov ? "rgba(36,30,23,.1)" : "rgba(36,30,23,0)",
-      btnLabel: p.file ? "VER PROYECTO" : "PRÓXIMAMENTE",
-
-      arrowRot: hov ? "rotate(45deg)" : "none",
-      open: () => this.openProject(p),
-      key: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); this.openProject(p); } },
-      enter: () => this.setState({ hovered: "p:" + p.id }),
-      leave: () => this.setState({ hovered: null })
-      };
-    });
-
-    const maxIndex = Math.max(0, list.length - 3);
-    const idx = Math.min(s.carouselIndex, maxIndex);
-    const openable = list.filter((p) => p.file);
-    const active = PROJECTS.find((p) => p.id === s.activeProject) || null;
-
-    const box = s.frameBox;
-    const scale = box && box.w ? Math.min(1, Math.floor((box.w / this.DESIGN_WIDTH) * 10000) / 10000) : 1;
-    const frameStyle = {
-      position: "absolute", top: 0, left: 0, border: 0, display: "block", background: "#FBF8F4",
-      width: box ? this.DESIGN_WIDTH + "px" : "100%",
-      height: box ? box.h / scale + "px" : "100%",
-      transform: "scale(" + scale + ")", transformOrigin: "0 0"
-    };
-
-    return {
-      dialCodes: DIAL_CODES,
-      dialValue: s.dial || DIAL_CODES[0].value,
-      dialFlag: (DIAL_CODES.find((d) => d.value === (s.dial || DIAL_CODES[0].value)) || DIAL_CODES[0]).label.split(" ")[0],
-      onDial: (e) => this.setState({ dial: e.target.value }),
-      typeChips: CATEGORIES.map((c) => {
-        const on = this.selectedTypes().indexOf(c.id) !== -1;
-        return {
-          label: CHIP_LABELS[c.id],
-          icon: ICONS_SM[c.id],
-          selected: on,
-          bg: on ? "#241E17" : "#FBF8F4",
-          fg: on ? "#FBF8F4" : "#241E17",
-          border: on ? "#241E17" : "#E4E4DF",
-          toggle: () => {
-            const cur = this.selectedTypes();
-            const next = cur.indexOf(c.id) !== -1 ? cur.filter((x) => x !== c.id) : cur.concat([c.id]);
-            this.setState({ types: next, formError: null });
-          }
-        };
-      }),
-      typeSummary: (() => {
-        const n = this.selectedTypes().length;
-        return n === 0 ? "SELECCIONA UNO O VARIOS" : n === 1 ? "1 SELECCIONADO" : n + " SELECCIONADOS";
-      })(),
-      frameHostRef: this.frameHostRef,
-      frameStyle,
-      frameRef: (el) => {
-        if (!el || el === this._frameEl) return;
-        this._frameEl = el;
-        el.addEventListener("load", () => { this.patchFrame({ currentTarget: el }); this.frameLoaded(); });
-      },
-      grainStyle: GRAIN_STYLE,
-      formTitle: FORM_TITLES[s.selectedCategory] || "¿Qué quieres construir?",
-      isCategories: s.view === "categories",
-      isProjects: s.view === "projects",
-      isTeam: s.view === "team",
-      goTeam: () => { this.setState({ view: "team", hovered: null }); this.push("#equipo"); },
-      team: TEAM.map((m) => {
-        const on = s.hovered === "t:" + m.id;
-        return {
-          ...m,
-          icon: SOCIAL_ICONS[m.network.toLowerCase()],
-          open: (e) => {
-            e.preventDefault();
-            const w = window.open(m.url, "_blank", "noopener,noreferrer");
-            if (!w) { try { window.top.location.href = m.url; } catch (err) { window.location.href = m.url; } }
-          },
-          lift: on ? "translateY(-6px)" : "none",
-          barScale: on ? "scaleX(1)" : "scaleX(0)",
-          arrowRot: on ? "rotate(45deg)" : "none",
-          photoStyle: { position: "absolute", inset: 0, backgroundImage: "url('" + this.imgUrl(m.photo) + "')", backgroundRepeat: "no-repeat", backgroundPosition: "center top", backgroundSize: "cover", transition: "600ms cubic-bezier(.22,.8,.2,1)", transform: on ? "scale(1.04)" : "none" },
-          enter: () => this.setState({ hovered: "t:" + m.id }),
-          leave: () => this.setState({ hovered: null })
-        };
-      }),
-      categories: catList,
-      activeCategory,
-      visibleProjects,
-      hasProjects: list.length > 0,
-      isEmptyCategory: s.view === "projects" && list.length === 0,
-      showArrows: list.length > 3,
-      trackShift: "translateX(calc(" + -idx + " * (33.3333% + 6.6667px)))",
-      prev: () => this.setState({ carouselIndex: Math.max(0, idx - 1) }),
-      next: () => this.setState({ carouselIndex: Math.min(maxIndex, idx + 1) }),
-      goBack: () => this.back(),
-      goContact: () => this.openCategory("custom"),
-      submit: (e) => this.onSubmit(e),
-      formError: s.formError,
-      formSent: s.formSent,
-      hasActiveProject: !!active,
-      activeProject: active ? { file: s.activeSrc || encodeURI(active.file), label: active.title + " · " + active.type, title: active.title } : { file: "", label: "", title: "" },
-      isLoading: s.loading,
-      closeProject: () => this.close(),
-      showViewerNav: openable.length > 1,
-      prevProject: () => this.step(-1),
-      nextProject: () => this.step(1)
-    };
+<script type="importmap">
+{
+  "imports": {
+    "three": "./vendor/three.min.js",
+    "gsap": "./vendor/gsap.min.js",
+    "lenis": "./vendor/lenis.min.js"
   }
 }
 </script>
+<script src="./config.js"></script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "HAYAI",
+  "url": "https://hayai.com.ve/",
+  "description": "Estudio de software: sistemas de comandas, concesionarios virtuales 360°, plataformas de hotelería, tiendas online y software a medida.",
+  "knowsAbout": [
+    "Sistemas de comandas",
+    "Concesionarios virtuales 360",
+    "Plataformas de hotelería y reservas",
+    "Comercio electrónico",
+    "Plataformas SaaS",
+    "Software a medida"
+  ]
+}
+</script>
+</head>
+
+<body id="top">
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
+
+<!-- ── Tira superior: todo anclado a los bordes, nada centrado ────────── -->
+<header class="topbar" data-topbar>
+  <a class="topbar__brand" href="#top" aria-label="HAYAI, inicio">HAYAI<sup>©</sup></a>
+
+  <nav class="topbar__nav" aria-label="Navegación principal">
+    <a class="link link--muted" href="#trabajo">Proyectos</a>
+    <a class="link link--muted" href="#soluciones">Soluciones</a>
+    <a class="link link--muted" href="#equipo">Equipo</a>
+  </nav>
+
+  <p class="topbar__aside tag" data-topbar-contact>
+    <a class="link" href="#contacto">Hablemos</a>
+  </p>
+
+  <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="menu-movil" aria-label="Abrir menú">
+    <span aria-hidden="true"></span>
+  </button>
+</header>
+
+<div class="mobile-menu" id="menu-movil" hidden>
+  <a href="#trabajo" data-menu-link>Proyectos</a>
+  <a href="#soluciones" data-menu-link>Soluciones</a>
+  <a href="#equipo" data-menu-link>Equipo</a>
+  <a href="#contacto" data-menu-link>Hablemos</a>
+  <button class="action action--quiet" type="button" data-action="explore">Abrir la galería</button>
+</div>
+
+<main id="contenido">
+
+  <!-- ── Escenario: galería 3D de proyectos ───────────────────────────── -->
+  <section class="stage" id="trabajo" data-stage aria-label="Proyectos de HAYAI">
+    <div class="stage__sticky">
+
+      <!-- Lienzo a sangre: las láminas se abren en abanico sobre el papel -->
+      <div class="stage__canvas" data-canvas-host></div>
+
+      <div class="stage__fallback" data-stage-fallback>
+        <img data-fallback-img src="./covers/guarowook.jpg" alt="" width="1080" height="1440" />
+      </div>
+
+      <!-- Logotipo gigante, bajo, con las láminas pasando por delante -->
+      <p class="stage__wordmark" aria-hidden="true">HAYAI</p>
+
+      <div class="stage__ui">
+
+        <!-- Columna izquierda: propuesta, acción y datos del proyecto activo -->
+        <div class="stage__rail">
+          <div class="stage__pitch" data-stage-intro>
+            <h1 class="display stage__title">Software que hace avanzar tu negocio</h1>
+            <p class="lede">Diseñamos y desarrollamos herramientas para vender, gestionar y crecer.</p>
+            <a class="action action--amber" href="#contacto">
+              Hablemos de tu proyecto<span class="glyph" aria-hidden="true">↗</span>
+            </a>
+          </div>
+
+          <dl class="stage__facts" data-stage-meta>
+            <div>
+              <dt class="tag">Categoría</dt>
+              <dd data-swap data-meta-category>Sistema de Comandas</dd>
+            </div>
+            <div>
+              <dt class="tag">Qué resuelve</dt>
+              <dd data-swap data-meta-desc>Sistema de comandas y operación para restaurante.</dd>
+            </div>
+            <div class="stage__facts-actions">
+              <button class="link tag tag--ink" type="button" data-action="open-project">
+                <span>Ver caso</span><span aria-hidden="true"> ↗</span>
+              </button>
+              <button class="link tag" type="button" data-action="explore">Abrir galería</button>
+            </div>
+          </dl>
+
+          <div class="stage__index">
+            <p class="tag">Trabajo seleccionado</p>
+            <p class="stage__count">
+              <span class="num" data-counter-current>01</span><span class="num stage__count-total" data-counter-total>/06</span>
+            </p>
+            <div class="stage__steps">
+              <button class="tag" type="button" data-action="prev" aria-label="Proyecto anterior">← Ant</button>
+              <button class="tag" type="button" data-action="next" aria-label="Proyecto siguiente">Sig →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna derecha: el portafolio entero, sincronizado con la escena.
+             El activo va nítido; el resto se atenúa y se desenfoca. -->
+        <nav class="stage__titles" data-title-list aria-label="Ir a un proyecto"></nav>
+      </div>
+
+      <div class="stage__empty" data-stage-empty hidden>
+        <h2 class="display" data-empty-title>Todavía no hemos publicado un caso aquí</h2>
+        <p class="lede">Pero podemos hacer que el primero sea el tuyo. Cuéntanos qué necesitas y lo estudiamos contigo.</p>
+        <a class="action action--amber" href="#contacto">Hablemos de tu proyecto<span class="glyph" aria-hidden="true">↗</span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Soluciones y el índice de proyectos ──────────────────────────── -->
+  <section class="section" id="soluciones" aria-labelledby="soluciones-titulo">
+    <div class="shell">
+      <h2 class="display section__title" id="soluciones-titulo" data-reveal="mask">
+        <span class="mask-line">¿Qué tipo de proyecto quieres implementar en tu negocio?</span>
+      </h2>
+
+      <div class="cats" data-cat-list role="group" aria-label="Categorías de proyecto"></div>
+
+      <div class="index-head">
+        <h3 class="index-head__title" data-index-title>Todos los proyectos</h3>
+        <p class="tag num" data-index-count></p>
+      </div>
+
+      <div class="work-grid" data-work-grid></div>
+      <div data-work-empty hidden></div>
+    </div>
+  </section>
+
+  <!-- ── Equipo ───────────────────────────────────────────────────────── -->
+  <section class="section" id="equipo" aria-labelledby="equipo-titulo">
+    <div class="shell">
+      <div class="team-head">
+        <h2 class="display section__title" id="equipo-titulo" data-reveal="mask"><span class="mask-line">El equipo detrás de los proyectos</span></h2>
+        <p class="lede" data-reveal style="--reveal-delay:90ms">
+          Diseño, producto e ingeniería en un mismo equipo: pensamos el negocio, prototipamos y lo llevamos a producción.
+        </p>
+      </div>
+      <div class="team-grid" data-team-grid></div>
+    </div>
+  </section>
+
+  <!-- ── Contacto ─────────────────────────────────────────────────────── -->
+  <section class="section section--contact" id="contacto" aria-labelledby="contacto-titulo">
+    <div class="shell contact__grid">
+      <div class="contact__intro" data-reveal>
+        <p class="tag">Hablemos</p>
+        <h2 class="display contact__title" id="contacto-titulo" data-form-title>¿Tienes un proyecto similar?</h2>
+        <p class="lede">Cuéntanos qué necesitas. Respondemos con una propuesta concreta de alcance y siguiente paso.</p>
+        <div class="contact__direct" data-direct-channels></div>
+      </div>
+
+      <form class="form" data-lead-form novalidate>
+        <div class="field">
+          <span class="tag" id="tipos-label">Tipo de proyecto</span>
+          <div class="chips" data-type-chips role="group" aria-labelledby="tipos-label"></div>
+          <p class="field__error" data-error-for="types" role="status"></p>
+        </div>
+
+        <div class="form__row">
+          <div class="field" data-field="phone">
+            <label class="tag" for="lead-phone">Teléfono</label>
+            <div class="phone-group">
+              <select id="lead-dial" name="dial" aria-label="Código de país" data-dial></select>
+              <input id="lead-phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="412 000 0000" />
+            </div>
+            <p class="field__error" data-error-for="phone" role="status"></p>
+          </div>
+
+          <div class="field" data-field="email">
+            <label class="tag" for="lead-email">Correo</label>
+            <input id="lead-email" name="email" type="email" autocomplete="email" placeholder="tu@correo.com" />
+            <p class="field__error" data-error-for="email" role="status"></p>
+          </div>
+        </div>
+
+        <div class="field" data-field="idea">
+          <label class="tag" for="lead-idea">Tu idea</label>
+          <textarea id="lead-idea" name="idea" placeholder="Cuéntanos brevemente qué quieres construir o mejorar…"></textarea>
+          <p class="field__error" data-error-for="idea" role="status"></p>
+        </div>
+
+        <p class="form__status" data-form-status role="status" aria-live="polite"></p>
+
+        <div class="form__submit">
+          <button class="action action--amber" type="submit" data-submit>
+            <span data-submit-label>Hablemos de tu proyecto</span><span class="glyph" aria-hidden="true">↗</span>
+          </button>
+          <p class="form__note tag" data-form-note></p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="shell site-footer__row">
+    <p class="tag">© <span data-year>2026</span> HAYAI</p>
+    <nav class="site-footer__links tag" aria-label="Pie de página">
+      <a class="link link--muted" href="#trabajo">Proyectos</a>
+      <a class="link link--muted" href="#soluciones">Soluciones</a>
+      <a class="link link--muted" href="#equipo">Equipo</a>
+      <a class="link link--muted" href="#contacto">Hablemos</a>
+    </nav>
+  </div>
+  <p class="site-footer__word" aria-hidden="true">HAYAI</p>
+</footer>
+
+<!-- ── Visor de casos de estudio ───────────────────────────────────────── -->
+<div class="viewer" data-viewer role="dialog" aria-modal="true" aria-labelledby="viewer-titulo" hidden>
+  <div class="viewer__bar">
+    <button class="link tag tag--ink" type="button" data-viewer-close>← Volver a proyectos</button>
+    <p class="viewer__label tag" id="viewer-titulo" data-viewer-label></p>
+    <div class="viewer__actions">
+      <button class="link tag" type="button" data-viewer-prev aria-label="Proyecto anterior">← Ant</button>
+      <button class="link tag" type="button" data-viewer-next aria-label="Proyecto siguiente">Sig →</button>
+      <a class="link tag tag--ink" data-viewer-open target="_blank" rel="noopener noreferrer">Abrir aparte ↗</a>
+    </div>
+  </div>
+  <div class="viewer__stage" data-viewer-stage>
+    <iframe class="viewer__frame" data-viewer-frame title="Caso de estudio" loading="lazy"></iframe>
+    <div class="viewer__curtain" data-viewer-curtain>
+      <p class="display viewer__curtain-title" data-viewer-curtain-title></p>
+      <p class="tag" data-viewer-curtain-note>Cargando experiencia</p>
+      <div class="viewer__progress"><span></span></div>
+      <button class="action action--amber viewer__retry" type="button" data-viewer-retry>Reintentar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Modo Explorar ───────────────────────────────────────────────────── -->
+<div class="explore" data-explore role="dialog" aria-modal="true" aria-label="Galería inmersiva de proyectos" hidden>
+  <div class="explore__canvas" data-explore-canvas-host></div>
+  <div class="explore__ui">
+    <div class="explore__top">
+      <p class="tag">Galería · recorrido circular</p>
+      <div class="explore__top-actions">
+        <button class="link tag" type="button" data-explore-list>Ver como lista</button>
+        <button class="link tag tag--ink" type="button" data-explore-close aria-label="Cerrar galería">Cerrar ✕</button>
+      </div>
+    </div>
+    <div></div>
+    <div class="explore__bottom">
+      <div class="explore__meta">
+        <p class="tag">
+          <span class="num" data-explore-index>01</span>
+          <span data-explore-count></span>
+          <span data-explore-category></span>
+        </p>
+        <p class="display explore__meta-title" data-explore-title></p>
+        <p class="lede" data-explore-desc></p>
+      </div>
+      <div class="explore__actions">
+        <div class="explore__dots" data-explore-dots role="group" aria-label="Ir a un proyecto"></div>
+        <button class="link tag" type="button" data-explore-prev aria-label="Proyecto anterior">← Ant</button>
+        <button class="link tag" type="button" data-explore-next aria-label="Proyecto siguiente">Sig →</button>
+        <button class="action action--amber" type="button" data-explore-open>Ver caso<span class="glyph" aria-hidden="true">↗</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<noscript>
+  <div class="shell" style="padding-block:120px 60px">
+    <h2 class="display" style="font-size:32px;margin-bottom:16px">Proyectos de HAYAI</h2>
+    <ul style="display:grid;gap:10px">
+      <li><a class="link" href="./projects/guarowook.html">GuaroWook, sistema de comandas</a></li>
+      <li><a class="link" href="./projects/coffee-cake.html">Coffee &amp; Cake, comandas para cafetería</a></li>
+      <li><a class="link" href="./projects/brasa.html">BRASA, comandas para restaurante</a></li>
+      <li><a class="link" href="./projects/changan-360.html">Changan 360°, concesionario virtual</a></li>
+      <li><a class="link" href="./projects/jac-360.html">JAC 360°, concesionario virtual</a></li>
+      <li><a class="link" href="./projects/rents-brooklyn-queens.html">Rents Brooklyn Queens, hotelería y reservas</a></li>
+    </ul>
+  </div>
+</noscript>
+
+<script type="module" src="./src/main.js"></script>
 </body>
 </html>
