@@ -753,8 +753,7 @@ html:not([data-gallery="fallback"]) .work-grid { display: none; }
 .form__status {
   display: none;
   gap: 10px;
-  padding: 14px 0;
-  border-top: 1px solid var(--ink-16);
+  padding: 12px 0 0;
   font-size: 13px;
   line-height: 1.5;
   color: var(--ink-soft);
@@ -762,7 +761,7 @@ html:not([data-gallery="fallback"]) .work-grid { display: none; }
 
 .form__status[data-kind] { display: block; }
 .form__status[data-kind="error"] { color: #b3402c; }
-.form__status[data-kind="ok"] { color: var(--ink); border-top-color: var(--amber-ink); }
+.form__status[data-kind="ok"] { color: var(--ink); }
 .form__status a { text-decoration: underline; }
 
 .form__submit { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; }
@@ -781,17 +780,6 @@ html:not([data-gallery="fallback"]) .work-grid { display: none; }
 }
 
 .site-footer__links { display: flex; flex-wrap: wrap; gap: 18px; }
-
-/* El logotipo cierra la página con el mismo gesto que la abre, pero apagado. */
-.site-footer__word {
-  display: block;
-  width: min(88vw, 1180px);
-  height: auto;
-  margin: clamp(24px, 4vh, 60px) auto calc(-4vw);
-  opacity: 0.1;
-  user-select: none;
-  pointer-events: none;
-}
 
 /* ── Visor de casos ───────────────────────────────────────────────────────── */
 .viewer {

@@ -10,7 +10,7 @@
  * explícito: el formulario nunca dice "enviado" sin que haya salido nada.
  */
 import { $, el } from '../dom.js';
-import { CATEGORIES, DIAL_CODES, categoryById } from '../data.js';
+import { DIAL_CODES, categoryById } from '../data.js';
 import { getState, subscribe } from '../store.js';
 
 const EMAIL_RE = /^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/;
@@ -30,7 +30,6 @@ export function initContact() {
   const form = $('[data-lead-form]');
   if (!form) return;
 
-  const chipsHost = $('[data-type-chips]');
   const dial = $('[data-dial]');
   const status = $('[data-form-status]');
   const note = $('[data-form-note]');
@@ -42,7 +41,6 @@ export function initContact() {
   const cfg = config();
   const channel = cfg.leadEndpoint ? 'endpoint' : cfg.whatsapp ? 'whatsapp' : cfg.email ? 'email' : null;
 
-  let selected = new Set();
   let pending = false;
   let lastSubmitAt = 0;
 
@@ -69,39 +67,12 @@ export function initContact() {
   );
   dial.value = DIAL_CODES[0].value;
 
-  /* ── Chips de tipo de proyecto ────────────────────────────────────────── */
-
-  const chips = CATEGORIES.map((category) => {
-    const chip = el('button', {
-      class: 'chip',
-      type: 'button',
-      'aria-pressed': 'false',
-      'data-cat': category.id,
-      text: category.short
-    });
-    chip.addEventListener('click', () => {
-      if (selected.has(category.id)) selected.delete(category.id);
-      else selected.add(category.id);
-      paintChips();
-      clearError('types');
-    });
-    return chip;
-  });
-  chipsHost.append(...chips);
-
-  function paintChips() {
-    for (const chip of chips) chip.setAttribute('aria-pressed', String(selected.has(chip.dataset.cat)));
-  }
-
   function syncWithFilter() {
     const filter = getState().filter;
     const category = filter ? categoryById(filter) : null;
+    // El titular sigue el filtro; el formulario ya no pregunta el tipo, porque
+    // la categoría se deduce de la sección desde la que se escribe.
     formTitle.textContent = category ? category.formTitle : '¿Tienes un proyecto similar?';
-    // Preselecciona la categoría que el visitante está mirando, sin borrar lo suyo.
-    if (filter && !selected.size) {
-      selected = new Set([filter]);
-      paintChips();
-    }
   }
 
   syncWithFilter();
@@ -135,7 +106,7 @@ export function initContact() {
   }
 
   function clearAllErrors() {
-    ['types', 'phone', 'email', 'idea'].forEach(clearError);
+    ['phone', 'email', 'idea'].forEach(clearError);
   }
 
   for (const name of ['phone', 'email', 'idea']) {
@@ -166,8 +137,6 @@ export function initContact() {
   function readForm() {
     const phoneRaw = form.elements.phone.value.trim();
     return {
-      types: [...selected].map((id) => (categoryById(id) || {}).title).filter(Boolean),
-      typeIds: [...selected],
       dial: dial.value,
       phone: phoneRaw,
       fullPhone: `${dial.value} ${phoneRaw}`.trim(),
@@ -180,10 +149,6 @@ export function initContact() {
     clearAllErrors();
     let firstInvalid = null;
 
-    if (!data.typeIds.length) {
-      setError('types', 'Selecciona al menos un tipo de proyecto.');
-      firstInvalid = firstInvalid || chips[0];
-    }
     if (data.phone.replace(/\D/g, '').length < 7) {
       setError('phone', 'Escribe un teléfono válido.');
       firstInvalid = firstInvalid || form.elements.phone;
@@ -203,7 +168,6 @@ export function initContact() {
     return [
       'Hola HAYAI, quiero hablar de un proyecto.',
       '',
-      `Tipo: ${data.types.join(', ')}`,
       `Teléfono: ${data.fullPhone}`,
       `Correo: ${data.email}`,
       '',
@@ -245,7 +209,6 @@ export function initContact() {
           headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
           body: JSON.stringify({
             source: 'hayai.com.ve',
-            types: data.types,
             phone: data.fullPhone,
             email: data.email,
             idea: data.idea,
@@ -257,8 +220,6 @@ export function initContact() {
         // Los campos sólo se limpian cuando el envío se ha confirmado.
         form.reset();
         dial.value = DIAL_CODES[0].value;
-        selected = new Set();
-        paintChips();
       } catch (error) {
         setStatus('error', `No pudimos enviar el mensaje (${error.message}). Inténtalo de nuevo en un momento.`);
       } finally {
@@ -285,7 +246,7 @@ export function initContact() {
       return;
     }
 
-    const subject = `Nuevo proyecto: ${data.types.join(', ')}`;
+    const subject = 'Nuevo proyecto desde hayai.com.ve';
     const mailto = `mailto:${cfg.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailto;
     setStatus('ok', [
