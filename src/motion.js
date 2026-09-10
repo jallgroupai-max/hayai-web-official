@@ -17,16 +17,28 @@ let lenis = null;
 let started = false;
 
 const reducedQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-const desktopQuery = window.matchMedia('(min-width: 900px)');
+
+/*
+ * Quién recibe el recorrido por scroll. No basta con el ancho: un portátil con
+ * el escalado de Windows al 150 % se queda en unos 820 px CSS y seguiría siendo
+ * un escritorio con rueda al que le tocaría la experiencia táctil. Se decide
+ * también por el puntero. Debe coincidir con el bloque equivalente de site.css.
+ */
+const wideQuery = window.matchMedia('(min-width: 900px)');
+const pointerQuery = window.matchMedia('(pointer: fine) and (min-width: 720px)');
 
 export const prefersReducedMotion = () => reducedQuery.matches;
-export const isDesktopStage = () => desktopQuery.matches;
+export const isDesktopStage = () => wideQuery.matches || pointerQuery.matches;
 
 /** @param {(matches: boolean) => void} fn */
 export function onLayoutChange(fn) {
-  const handler = () => fn(desktopQuery.matches);
-  desktopQuery.addEventListener('change', handler);
-  return () => desktopQuery.removeEventListener('change', handler);
+  const handler = () => fn(isDesktopStage());
+  wideQuery.addEventListener('change', handler);
+  pointerQuery.addEventListener('change', handler);
+  return () => {
+    wideQuery.removeEventListener('change', handler);
+    pointerQuery.removeEventListener('change', handler);
+  };
 }
 
 /** ¿Hay contexto WebGL utilizable? */

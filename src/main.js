@@ -31,7 +31,15 @@ function openProject(project) {
 }
 
 async function loadGallery() {
-  if (!galleryIsViable()) return null;
+  if (!galleryIsViable()) {
+    // Sin esto, "el scroll no cambia los proyectos" es indistinguible de un
+    // fallo. Aquí queda dicho por qué.
+    console.info(
+      '[hayai] galería en modo alternativa HTML —',
+      prefersReducedMotion() ? 'el sistema pide movimiento reducido' : 'WebGL no disponible'
+    );
+    return null;
+  }
   try {
     const { Gallery } = await import('./gallery/scene.js');
     return new Gallery({

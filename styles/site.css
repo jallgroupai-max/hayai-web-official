@@ -850,6 +850,29 @@ html[data-gallery="fallback"] .stage__wordmark { display: none; }
   .topbar__aside { display: none; }
   .menu-toggle { display: inline-grid; }
 
+
+  .cat { grid-template-columns: 3ch minmax(0, 1fr); }
+  .cat__meta { grid-column: 2; margin-top: 8px; }
+  .cat:hover { padding-left: 0; }
+
+  .work-grid { grid-template-columns: minmax(0, 1fr); gap: clamp(30px, 8vw, 54px); }
+  .work-card:nth-child(even) { margin-top: 0; }
+  .work-card__shot,
+  .work-card:nth-child(3n + 2) .work-card__shot,
+  .work-card:nth-child(3n) .work-card__shot { aspect-ratio: 4 / 5; max-height: none; }
+
+  .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+  .viewer__bar { padding: 10px var(--edge); }
+  .viewer__label { display: none; }
+}
+
+/* Escenario apilado. La condición NO es sólo el ancho: un portátil con el
+   escalado de Windows al 150 % se queda en unos 820 px CSS y sigue siendo un
+   escritorio con rueda, así que merece el recorrido por scroll. Se apila
+   cuando el puntero es grueso (táctil) o cuando la pantalla es de verdad
+   estrecha. Debe coincidir exactamente con isDesktopStage() en motion.js. */
+@media (max-width: 899px) and (pointer: coarse), (max-width: 719px) {
   /* Fuera del modo inmersivo el gesto vertical desplaza la página: el
      escenario deja de fijarse y sus capas pasan a ser bloques en columna.
      display:contents disuelve .stage__ui para intercalar el lienzo entre la
@@ -915,21 +938,6 @@ html[data-gallery="fallback"] .stage__wordmark { display: none; }
   }
 
   .stage__empty { order: 2; position: relative; inset: auto; min-height: 48svh; }
-
-  .cat { grid-template-columns: 3ch minmax(0, 1fr); }
-  .cat__meta { grid-column: 2; margin-top: 8px; }
-  .cat:hover { padding-left: 0; }
-
-  .work-grid { grid-template-columns: minmax(0, 1fr); gap: clamp(30px, 8vw, 54px); }
-  .work-card:nth-child(even) { margin-top: 0; }
-  .work-card__shot,
-  .work-card:nth-child(3n + 2) .work-card__shot,
-  .work-card:nth-child(3n) .work-card__shot { aspect-ratio: 4 / 5; max-height: none; }
-
-  .team-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-
-  .viewer__bar { padding: 10px var(--edge); }
-  .viewer__label { display: none; }
 }
 
 @media (max-width: 560px) {
