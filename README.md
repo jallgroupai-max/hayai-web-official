@@ -79,6 +79,10 @@ Cuerpo que recibe `leadEndpoint`:
      description: 'Una frase.',
      accent: '#1A1413',           // color mientras carga la portada
      cover: './covers/mi-proyecto.jpg',
+     // Componentes que flotan alrededor de la lámina, recortados de la propia
+     // portada: [x, y, ancho, alto] normalizados, con origen ARRIBA a la
+     // izquierda. Entre 2 y 3, con proporciones entre 0,7 y 4.
+     fragments: [[0.15, 0.48, 0.34, 0.19]],
      logo: './assets-min/logo-mi-proyecto.png',
      file: './projects/mi-proyecto.html'  // null => tarjeta "Próximamente"
    }
@@ -149,6 +153,15 @@ tools/                Autoría: vendorizado, portadas y comprobaciones en navega
 - **Selección por GPU.** El shader de selección comparte vértice con el de
   pintado, así que la zona que se puede pulsar arrastra la misma curvatura que
   se ve, también cerca de los bordes.
+- **El recorrido se detiene en cada proyecto.** El scroll no mapea linealmente
+  a la posición de la galería: cada tramo pasa un 45 % detenido y el resto
+  cambiando. Sin eso el recorrido se queda parado entre dos proyectos, con los
+  componentes flotantes a medio desvanecer para siempre.
+- **Los componentes flotantes salen de la propia portada.** Son recortes UV de
+  la misma textura, no imágenes aparte: cero descargas nuevas y la cuenta de
+  texturas no se mueve. Sus coordenadas se declaran desde arriba a la izquierda
+  y la escena les da la vuelta en Y, porque el eje v de una textura se mide
+  desde abajo.
 - **El abanico es diagonal y cizallado.** Cada lámina es un paralelogramo
   (cizalla constante en el vertex shader) y el recorrido sube hacia la derecha
   con solape fuerte. Es lo que separa un abanico de un carrusel de tarjetas.
@@ -168,9 +181,15 @@ tools/                Autoría: vendorizado, portadas y comprobaciones en navega
 
 ```bash
 cd tools
-node check.mjs            # 46 comprobaciones en Chromium
+node check.mjs            # comprobaciones en Chromium
 node check.mjs --shots    # además guarda capturas en screenshots/check/
+node crops.mjs            # hoja de contactos de los recortes de fragments
 ```
+
+`crops.mjs` dibuja cada portada con sus rectángulos encima y los recortes
+sueltos al lado. Es la forma de ajustar las coordenadas de `fragments`
+mirándolas, en vez de estimarlas: un recorte mal puesto cae en una zona vacía y
+en las portadas oscuras se ve como un rectángulo negro.
 
 Cubre cinco viewports (1440×900, 1280×800, 834×1112, 390×844, 360×740), zoom al
 200 %, filtros, categoría vacía, modo Explorar y su recorrido circular, visor,

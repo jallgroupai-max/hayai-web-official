@@ -33,9 +33,28 @@ import {
 } from '../motion.js';
 import { GalleryController } from '../gallery/controller.js';
 
-/** Alturas de viewport que dura cada transición del recorrido. */
-const TRAVEL = 0.8;
+/** Alturas de viewport que dura cada tramo del recorrido. */
+const TRAVEL = 1;
 const HOVER_THROTTLE = 80;
+
+/**
+ * Fracción de cada tramo que el recorrido pasa DETENIDO en el proyecto.
+ * Sin esto el scroll mapea linealmente a la posición de la galería y el
+ * recorrido se queda parado en sitios como 0,694: ni un proyecto ni el
+ * siguiente, con los componentes flotantes a medio desvanecer para siempre.
+ * Con la espera, cada proyecto es una pantalla: se sostiene, y el cambio ocurre
+ * de golpe en el resto del tramo.
+ */
+const DWELL = 0.55;
+
+/** Mapea el avance continuo del documento a un recorrido con reposos. */
+function dwellPosition(raw) {
+  const index = Math.floor(raw);
+  const within = raw - index;
+  if (within <= DWELL) return index;
+  const t = (within - DWELL) / (1 - DWELL);
+  return index + t * t * (3 - 2 * t);
+}
 
 export function initStage({ gallery, onOpenProject, onExplore }) {
   const stage = $('[data-stage]');
@@ -301,7 +320,7 @@ export function initStage({ gallery, onOpenProject, onExplore }) {
       onUpdate: (self) => {
         const total = currentList().length;
         if (!total) return;
-        const pos = self.progress * Math.max(0, total - 1);
+        const pos = dwellPosition(self.progress * Math.max(0, total - 1));
         gallery.setPosition(pos);
         if (controller) controller.jumpTo(pos, { immediate: true });
         setIntroOut(self.progress > 0.035);

@@ -255,39 +255,28 @@ a { color: inherit; text-decoration: none; }
 .action .glyph { transition: transform var(--t-control) var(--ease); }
 .action:hover .glyph { transform: translate(3px, -3px); }
 
-/* Revelado de texto ------------------------------------------------------ */
+/* Revelado de texto ------------------------------------------------------
+   El estado inicial vive aquí para que nada parpadee antes de que arranque el
+   JS. A partir de ahí manda GSAP: la animación va enganchada al scroll con
+   scrub, así que no puede haber ninguna transición CSS peleándose con ella. */
 [data-reveal] {
   opacity: 0;
-  transform: translateY(20px);
+  transform: translateY(26px);
 }
 
-[data-reveal].is-in {
-  opacity: 1;
-  transform: none;
-  transition: opacity var(--t-open) var(--ease-out) var(--reveal-delay, 0ms),
-    transform var(--t-open) var(--ease-out) var(--reveal-delay, 0ms);
-}
+[data-reveal].is-in { opacity: 1; transform: none; }
 
-/* Variante con máscara para los titulares grandes: el texto se descubre de
-   arriba abajo en lugar de aparecer. El contenido semántico no cambia.
-
-   El recorte va en un hijo, nunca en el elemento observado: IntersectionObserver
-   tiene en cuenta el clip-path del propio objetivo, así que un titular recortado
-   al 100 % jamás se considera visible y jamás se revelaría. */
-[data-reveal="mask"] { opacity: 1; }
+/* Variante con máscara para los titulares grandes. El recorte va en un hijo,
+   nunca en el elemento que dispara: ScrollTrigger mide el disparador, y un
+   titular recortado al 100 % daría altura cero. */
+[data-reveal="mask"] { opacity: 1; transform: none; }
 
 [data-reveal="mask"] > .mask-line {
   display: block;
   clip-path: inset(0 0 100% 0);
-  transform: translateY(0.16em);
 }
 
-[data-reveal="mask"].is-in > .mask-line {
-  clip-path: inset(0 0 -14% 0);
-  transform: none;
-  transition: clip-path 900ms var(--ease-out) var(--reveal-delay, 0ms),
-    transform 900ms var(--ease-out) var(--reveal-delay, 0ms);
-}
+[data-reveal="mask"].is-in > .mask-line { clip-path: inset(0 0 -14% 0); }
 
 /* Movimiento reducido ----------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
@@ -304,4 +293,5 @@ a { color: inherit; text-decoration: none; }
 
   [data-reveal] { opacity: 1; transform: none; }
   [data-reveal="mask"] > .mask-line { clip-path: none; transform: none; }
+  [data-parallax] img { height: 100% !important; transform: none !important; }
 }

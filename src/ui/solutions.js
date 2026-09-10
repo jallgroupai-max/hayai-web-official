@@ -8,7 +8,7 @@
 import { $, el, pad2 } from '../dom.js';
 import { CATEGORIES, projectsOf, categoryById } from '../data.js';
 import { getState, setState, currentList, subscribe } from '../store.js';
-import { initReveal } from './reveal.js';
+import { initReveal, clearReveal } from './reveal.js';
 import { initParallax, clearParallax } from './parallax.js';
 
 export function initSolutions({ onOpenProject, onFilterChange }) {
@@ -66,6 +66,7 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
         class: 'work-card',
         type: 'button',
         'data-soon': String(!openable),
+        'data-reveal': '',
         'aria-disabled': openable ? null : 'true'
       },
       [
@@ -128,10 +129,11 @@ export function initSolutions({ onOpenProject, onFilterChange }) {
       button.setAttribute('aria-pressed', String(button.dataset.cat === state.filter));
     }
 
-    initReveal(grid);
     // La rejilla se reconstruye entera al filtrar: los disparadores viejos
     // apuntan a nodos que ya no existen.
+    clearReveal(grid);
     clearParallax();
+    initReveal(grid);
     initParallax(grid);
   }
 

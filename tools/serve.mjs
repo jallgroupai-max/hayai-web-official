@@ -4,7 +4,7 @@ import http from 'node:http';
 import { createReadStream } from 'node:fs';
 import { stat } from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -67,7 +67,14 @@ export function serve(port = 0) {
   });
 }
 
-if (import.meta.url === `file://${process.argv[1].replace(/\\/g, '/')}`) {
+// Arranque como CLI. pathToFileURL es obligatorio aqui: en Windows
+// import.meta.url es "file:///C:/..." con tres barras, asi que compararlo a mano
+// contra process.argv[1] nunca coincide y el proceso se cerraba sin escuchar.
+// Solo se notaba al ejecutarlo directamente, porque covers.mjs y check.mjs
+// importan serve() como funcion.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const { origin } = await serve(Number(process.argv[2]) || 4173);
-  console.log(`sirviendo ${ROOT} en ${origin}`);
+  console.log(`sirviendo ${ROOT}`);
+  console.log(`  ${origin}`);
+  console.log('  Ctrl+C para parar');
 }

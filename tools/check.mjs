@@ -34,11 +34,20 @@ const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=sw
 // propios avisos (por ejemplo buscan .image-slots.state.json, que nunca estuvo
 // en el repositorio). Se anotan aparte para no confundirlos con errores del sitio.
 function watch(page, errors, inner) {
+  // Los avisos de los bundles heredados de /projects y los cortes de red hacia
+  // hosts externos (las fuentes de Google) se anotan aparte: no son regresiones
+  // del sitio y ensucian la senal.
+  const external = /net::ERR_(NAME_NOT_RESOLVED|CONNECTION_RESET|NETWORK_CHANGED|NETWORK_ACCESS_DENIED|INTERNET_DISCONNECTED|TIMED_OUT)/;
   const bucketFor = (url) => (url && url.includes('/projects/') ? inner : errors);
 
   page.on('console', (msg) => {
     if (msg.type() !== 'error') return;
-    bucketFor(msg.location().url).push(`console: ${msg.text()}`);
+    const text = msg.text();
+    if (external.test(text)) {
+      inner.push(`red externa: ${text}`);
+      return;
+    }
+    bucketFor(msg.location().url).push(`console: ${text}`);
   });
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('response', (res) => {
@@ -46,12 +55,29 @@ function watch(page, errors, inner) {
     bucketFor(res.url()).push(`HTTP ${res.status()}: ${res.url()}`);
   });
   page.on('requestfailed', (req) => {
-    if (!req.url().startsWith(origin)) return;
+    if (!req.url().startsWith(origin)) {
+      inner.push(`red externa: ${req.url()} (${req.failure()?.errorText})`);
+      return;
+    }
     bucketFor(req.url()).push(`request failed: ${req.url()} (${req.failure()?.errorText})`);
   });
 }
 
 const innerIssues = [];
+
+/**
+ * Navegar con un reintento. Con SwiftShader y varios contextos abiertos, en
+ * maquinas justas de memoria el primer `load` se agota de vez en cuando; eso es
+ * ruido del entorno de pruebas, no del sitio.
+ */
+async function goto(page, url) {
+  try {
+    await page.goto(url, { waitUntil: 'load', timeout: 45000 });
+  } catch {
+    await page.waitForTimeout(1500);
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 45000 });
+  }
+}
 
 async function newPage(context) {
   const page = await context.newPage();
@@ -64,7 +90,7 @@ async function newPage(context) {
 for (const vp of VIEWPORTS) {
   const context = await browser.newContext({ viewport: { width: vp.width, height: vp.height } });
   const { page, errors } = await newPage(context);
-  await page.goto(origin + '/', { waitUntil: 'load' });
+  await goto(page, origin + '/');
   await page.waitForTimeout(2500);
 
   const mode = await page.evaluate(() => document.documentElement.dataset.gallery);
@@ -90,8 +116,14 @@ for (const vp of VIEWPORTS) {
       return (document.querySelector('[data-meta-category]') || {}).textContent || '';
     });
   const firstTitle = await activeTitle();
-  await page.evaluate(() => window.scrollTo(0, window.innerHeight * 2.2));
-  await page.waitForTimeout(1600);
+  // Rueda real: Lenis intercepta el evento wheel, asi que window.scrollTo se
+  // saltaria justo el camino que recorre un visitante.
+  await page.mouse.move(Math.round(vp.width / 2), Math.round(vp.height / 2));
+  for (let i = 0; i < 7; i++) {
+    await page.mouse.wheel(0, 420);
+    await page.waitForTimeout(220);
+  }
+  await page.waitForTimeout(1200);
   const secondTitle = await activeTitle();
   const counter = await page.textContent('[data-counter-current]');
 
@@ -130,7 +162,7 @@ for (const vp of VIEWPORTS) {
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const { page, errors } = await newPage(context);
-  await page.goto(origin + '/', { waitUntil: 'load' });
+  await goto(page, origin + '/');
   await page.waitForTimeout(2200);
 
   // Filtro por categoría.
@@ -211,6 +243,35 @@ for (const vp of VIEWPORTS) {
   const afterBack = await page.evaluate(() => location.hash);
   pass('historial navegable', `atrás -> ${afterBack || '(sin hash)'}`);
 
+  // Los componentes flotantes solo estan cuando el proyecto esta asentado.
+  // Se navega con rueda real: window.scrollTo se salta a Lenis y deja la
+  // galeria a medio camino, que es justo lo que este caso quiere distinguir.
+  const opacidad = () =>
+    page.evaluate(() =>
+      Math.max(...window.HAYAI.gallery.fragments.map((m) => m.userData.uniforms.uOpacity.value))
+    );
+
+  await page.mouse.move(720, 450);
+  for (let i = 0; i < 14; i++) await page.mouse.wheel(0, -500);
+  await page.waitForTimeout(1800);
+  const quietos = await opacidad();
+
+  // El minimo a lo largo de TODA la transicion: con la espera del recorrido,
+  // una rueda corta ya no mueve el proyecto de su reposo, asi que medir en un
+  // instante suelto no dice nada.
+  let minimo = 1;
+  for (let i = 0; i < 16; i++) {
+    await page.mouse.wheel(0, 260);
+    await page.waitForTimeout(70);
+    minimo = Math.min(minimo, await opacidad());
+  }
+
+  if (quietos > 0.9 && minimo < 0.35) {
+    pass('componentes flotantes', `opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
+  } else {
+    fail('componentes flotantes', `opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
+  }
+
   if (errors.length) fail('interacciones: consola limpia', errors.slice(0, 5).join(' | '));
   else pass('interacciones: consola limpia');
 
@@ -221,7 +282,7 @@ for (const vp of VIEWPORTS) {
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const { page, errors } = await newPage(context);
-  await page.goto(origin + '/#pos/brasa', { waitUntil: 'load' });
+  await goto(page, origin + '/#pos/brasa');
   await page.waitForTimeout(2500);
   const visible = await page.locator('[data-viewer]').isVisible();
   const label = await page.textContent('[data-viewer-label]');
@@ -236,7 +297,7 @@ for (const vp of VIEWPORTS) {
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, reducedMotion: 'reduce' });
   const { page, errors } = await newPage(context);
-  await page.goto(origin + '/', { waitUntil: 'load' });
+  await goto(page, origin + '/');
   await page.waitForTimeout(1800);
   const mode = await page.evaluate(() => document.documentElement.dataset.gallery);
   const img = await page.locator('[data-fallback-img]').isVisible();
@@ -258,7 +319,7 @@ for (const vp of VIEWPORTS) {
       return null;
     };
   });
-  await page.goto(origin + '/', { waitUntil: 'load' });
+  await goto(page, origin + '/');
   await page.waitForTimeout(1800);
   const mode = await page.evaluate(() => document.documentElement.dataset.gallery);
   const cards = await page.locator('.work-card').count();
@@ -274,7 +335,7 @@ for (const vp of VIEWPORTS) {
 {
   const context = await browser.newContext({ viewport: { width: 720, height: 900 }, deviceScaleFactor: 2 });
   const { page, errors } = await newPage(context);
-  await page.goto(origin + '/', { waitUntil: 'load' });
+  await goto(page, origin + '/');
   await page.waitForTimeout(1600);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   if (overflow <= 1) pass('zoom 200 % (720 css px)', 'sin desbordamiento');
@@ -289,7 +350,7 @@ for (const vp of VIEWPORTS) {
 {
   const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const { page, errors } = await newPage(context);
-  await page.goto(origin + '/', { waitUntil: 'load' });
+  await goto(page, origin + '/');
   await page.waitForTimeout(3000);
 
   const snapshot = () =>
@@ -380,7 +441,7 @@ server.close();
 
 if (innerIssues.length) {
   console.log('');
-  console.log('Avisos dentro de los casos de estudio de /projects (preexistentes, no del sitio):');
+  console.log('Avisos ajenos al sitio (bundles de /projects y red externa):');
   for (const issue of [...new Set(innerIssues)]) console.log(`  - ${issue}`);
 }
 

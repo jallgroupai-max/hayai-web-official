@@ -45,6 +45,17 @@ const ROLL = 0.045;        // giro en Z: papel lanzado, no tarjeta alineada
 const SHEAR = 0.15;        // cizalla constante de cada lamina
 const CORNER_RADIUS = 0;   // la pagina no redondea nada
 
+/* Componentes sueltos que flotan alrededor de la lamina activa. Se dibujan con
+   la MISMA textura del proyecto recortada por UV, asi que no hay ni una textura
+   ni una geometria de mas. Cada entrada dice donde se coloca respecto al centro
+   de la lamina (en anchos de lamina), su tamano y su desfase de flotacion. */
+const FRAGMENT_SLOTS = 3;
+const FRAGMENT_LAYOUT = [
+  { x: -0.96, y: 0.54, z: 0.32, size: 0.52, phase: 0.0, spin: -0.05 },
+  { x: 0.94, y: -0.28, z: 0.38, size: 0.44, phase: 2.1, spin: 0.06 },
+  { x: -0.80, y: -0.66, z: 0.28, size: 0.38, phase: 4.0, spin: 0.03 }
+];
+
 /** Numero impar de mallas visibles para que la activa quede centrada. */
 function slotCountFor(total) {
   if (total <= 1) return 1;
@@ -104,6 +115,7 @@ export class Gallery {
     this.activeSlots = 0;
 
     this.position = 0;
+    this.time = 0;
     this.velocity = 0;
     this.smoothVelocity = 0;
     this.loop = false;
@@ -140,6 +152,8 @@ export class Gallery {
     for (let i = 0; i < MAX_SLOTS; i++) {
       const uniforms = {
         uMap: { value: null },
+        // vec4 como array plano: three lo envia con uniform4fv sin necesitar Vector4.
+        uCrop: { value: [0, 0, 1, 1] },
         uImageAspect: { value: PLANE_ASPECT },
         uPlaneAspect: { value: PLANE_ASPECT },
         uBend: { value: 0 },
@@ -182,6 +196,49 @@ export class Gallery {
 
       this.group.add(mesh);
       this.slots.push(mesh);
+    }
+
+    this.buildFragments();
+  }
+
+  /** Mallas de los componentes flotantes. Comparten geometria con las laminas. */
+  buildFragments() {
+    this.fragments = [];
+    for (let i = 0; i < FRAGMENT_SLOTS; i++) {
+      const uniforms = {
+        uMap: { value: null },
+        uCrop: { value: [0, 0, 1, 1] },
+        uImageAspect: { value: 1 },
+        uPlaneAspect: { value: 1 },
+        uBend: { value: 0 },
+        uShear: { value: SHEAR * 0.45 },
+        uPaper: { value: new Color('#e9e6e0') },
+        uOffset: { value: 0 },
+        uFocus: { value: 1 },
+        uHover: { value: 0 },
+        uOpacity: { value: 0 },
+        uRadius: { value: CORNER_RADIUS },
+        uPickColor: { value: new Color(0, 0, 0) }
+      };
+
+      const material = new ShaderMaterial({
+        uniforms,
+        vertexShader: SHEET_VERTEX,
+        fragmentShader: SHEET_FRAGMENT,
+        transparent: true,
+        depthWrite: false,
+        depthTest: false,
+        side: DoubleSide
+      });
+
+      const mesh = new Mesh(this.geometry, material);
+      mesh.frustumCulled = false;
+      mesh.visible = false;
+      // Siempre por delante de las laminas: sobresalen de la imagen.
+      mesh.renderOrder = 200 + i;
+      mesh.userData = { uniforms, material };
+      this.group.add(mesh);
+      this.fragments.push(mesh);
     }
   }
 
@@ -340,6 +397,7 @@ export class Gallery {
   update(dt) {
     if (this.lost || !this.host || !this.list.length) return;
 
+    this.time += dt;
     const previous = this.lastPosition ?? this.position;
     const raw = dt > 0 ? (this.position - previous) / dt : 0;
     this.lastPosition = this.position;
@@ -354,6 +412,9 @@ export class Gallery {
 
     const bend = clamp(this.velocity * 0.16, -1, 1);
     const half = Math.floor(this.activeSlots / 2);
+    let activeOffset = Infinity;
+    let activeAnchor = null;
+    let activeProject = null;
     const base = Math.round(this.position);
     const total = this.list.length;
     const hovered = this.hoverIndex;
@@ -390,10 +451,18 @@ export class Gallery {
       const l = layoutFor(offset);
       const width = this.planeWidth;
 
-      mesh.position.set(l.x * width, l.y * width, l.z * width);
+      // Flotacion: cada lamina cabecea a su propio ritmo, mas la activa.
+      const bob = Math.sin(this.time * 0.7 + logical * 1.7) * 0.018;
+      mesh.position.set(l.x * width, (l.y + bob) * width, l.z * width);
       mesh.rotation.y = l.rotY;
-      mesh.rotation.z = l.rotZ;
+      mesh.rotation.z = l.rotZ + Math.sin(this.time * 0.45 + logical) * 0.006;
       mesh.scale.setScalar(width * l.scale);
+
+      if (Math.abs(offset) < Math.abs(activeOffset)) {
+        activeOffset = offset;
+        activeAnchor = { x: l.x * width, y: (l.y + bob) * width, z: l.z * width };
+        activeProject = project;
+      }
       // De atrás hacia delante: las transparencias se apilan en orden.
       mesh.renderOrder = 100 - Math.round(Math.abs(offset) * 10);
 
@@ -410,7 +479,70 @@ export class Gallery {
       data.uniforms.uBend.value = bend * (1 - Math.min(Math.abs(offset), 3) * 0.18);
     }
 
+    this.updateFragments(activeProject, activeAnchor, activeOffset);
     this.renderer.render(this.scene, this.camera);
+  }
+
+  /**
+   * Coloca los componentes flotantes alrededor de la lámina activa.
+   * Sólo están presentes cuando el proyecto está asentado: en cuanto el scroll
+   * mueve la galería se retiran, y vuelven ya con los del proyecto siguiente.
+   * Ese ir y venir es lo que hace legible el cambio.
+   */
+  updateFragments(project, anchor, offset) {
+    const width = this.planeWidth;
+    const crops = (project && project.fragments) || [];
+    const texture = project ? this.textures.get(project.id) : null;
+    const imageAspect = texture?.userData?.aspect || PLANE_ASPECT;
+
+    // 1 con el proyecto centrado, 0 en cuanto empieza el viaje al siguiente.
+    const settled = anchor ? 1 - MathUtils.smoothstep(Math.abs(offset), 0.14, 0.5) : 0;
+
+    for (let i = 0; i < this.fragments.length; i++) {
+      const mesh = this.fragments[i];
+      const crop = crops[i];
+
+      if (!crop || !texture || settled <= 0.002) {
+        mesh.visible = false;
+        continue;
+      }
+      mesh.visible = true;
+
+      const l = FRAGMENT_LAYOUT[i];
+      const data = mesh.userData;
+      const [cx, cy, cw, ch] = crop;
+
+      // Proporción real del recorte dentro de la portada.
+      const cropAspect = (cw / ch) * imageAspect;
+      const w = l.size * width * (0.86 + 0.14 * settled);
+      const h = w / cropAspect;
+
+      data.uniforms.uMap.value = texture;
+      data.uniforms.uCrop.value[0] = cx;
+      // Los datos declaran el recorte desde ARRIBA, que es lo intuitivo al
+      // mirar la portada. El eje v de una textura se mide desde ABAJO, así que
+      // hay que darle la vuelta aquí. Sin esto los recortes caen en otra zona
+      // de la imagen (y en las portadas oscuras, en negro).
+      data.uniforms.uCrop.value[1] = 1 - (cy + ch);
+      data.uniforms.uCrop.value[2] = cw;
+      data.uniforms.uCrop.value[3] = ch;
+      data.uniforms.uImageAspect.value = cropAspect;
+      data.uniforms.uPlaneAspect.value = cropAspect;
+      data.uniforms.uOpacity.value = settled;
+
+      // Flotación propia: cada pieza cabecea con su desfase.
+      const swayX = Math.sin(this.time * 0.6 + l.phase) * 0.014 * width;
+      const swayY = Math.sin(this.time * 0.9 + l.phase) * 0.032 * width;
+
+      mesh.position.set(
+        anchor.x + l.x * width + swayX,
+        anchor.y + l.y * width + swayY,
+        anchor.z + l.z * width
+      );
+      mesh.rotation.z = l.spin + Math.sin(this.time * 0.5 + l.phase) * 0.022;
+      // La geometría mide 1 x 1/PLANE_ASPECT, de ahí el factor en Y.
+      mesh.scale.set(w, h * PLANE_ASPECT, 1);
+    }
   }
 
   /* ── Selección por GPU ────────────────────────────────────────────────── */
@@ -461,6 +593,7 @@ export class Gallery {
       mesh.userData.material.dispose();
       mesh.userData.pickMaterial.dispose();
     }
+    for (const mesh of this.fragments) mesh.userData.material.dispose();
     for (const texture of this.textures.values()) texture.dispose();
     this.textures.clear();
     this.pickTarget.dispose();

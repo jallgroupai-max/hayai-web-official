@@ -77,6 +77,10 @@ export const SHEET_FRAGMENT = /* glsl */ `
   precision highp float;
 
   uniform sampler2D uMap;
+  // Sub-rectángulo de la textura que dibuja esta malla, en UV [x, y, ancho, alto].
+  // (0,0,1,1) es la portada entera; cualquier otro valor recorta un componente
+  // suelto de esa misma imagen, sin cargar una textura aparte.
+  uniform vec4 uCrop;
   uniform vec3 uPaper;       // color del papel: hacia ahí se retiran las piezas
   uniform float uImageAspect;
   uniform float uPlaneAspect;
@@ -104,8 +108,8 @@ export const SHEET_FRAGMENT = /* glsl */ `
     if (mask <= 0.002) discard;
 
     float zoom = 1.0 - 0.045 * uFocus - 0.02 * uHover;
-    vec2 uv = clamp(coverUv(vUv, uImageAspect, uPlaneAspect, zoom), 0.0015, 0.9985);
-    vec3 col = texture2D(uMap, uv).rgb;
+    vec2 base = clamp(coverUv(vUv, uImageAspect, uPlaneAspect, zoom), 0.0015, 0.9985);
+    vec3 col = texture2D(uMap, uCrop.xy + base * uCrop.zw).rgb;
 
     // Sobre papel claro la profundidad no se hace apagando a negro: las piezas
     // que no mandan se retiran HACIA el papel, como si se alejaran en la página.
