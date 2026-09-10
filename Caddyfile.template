@@ -56,6 +56,23 @@
 		-Server
 	}
 
+	# Cache-Control. Sin estas cabeceras el origen no dice nada y Cloudflare
+	# aplica su valor por defecto: cuatro horas para css y js. Como los archivos
+	# no llevan huella en el nombre, un despliegue nuevo no invalida nada y el
+	# sitio se sirve con el HTML nuevo y los estilos viejos, que es justo lo que
+	# rompe la maquetacion.
+	#
+	# no-cache no significa "no guardes": significa "guarda pero revalida". Con
+	# ETag la revalidacion se resuelve con un 304 vacio, asi que cuesta poco y
+	# garantiza que un despliegue se ve al instante.
+	@revalidar path *.html *.css *.js *.mjs *.json
+	header @revalidar Cache-Control "no-cache"
+
+	# Imagenes y fuentes cambian poco y pesan mucho: se guardan un dia. Si se
+	# regeneran las portadas, tardan como mucho eso en verse.
+	@medios path *.jpg *.jpeg *.png *.webp *.gif *.svg *.ico *.woff2 *.woff
+	header @medios Cache-Control "public, max-age=86400"
+
 	root * {{.StaticFileRoot}}
 
 	# Handle static files

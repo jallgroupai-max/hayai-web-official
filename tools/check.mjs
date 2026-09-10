@@ -296,7 +296,7 @@ for (const vp of VIEWPORTS) {
   }
 
   const piezas = await page.locator('.ui-piece').count();
-  if (quietos > 0.9 && minimo < 0.35 && piezas === 3) {
+  if (quietos > 0.9 && minimo < 0.35 && piezas >= 3) {
     pass('componentes flotantes', `${piezas} piezas, opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);
   } else {
     fail('componentes flotantes', `${piezas} piezas, opacidad ${quietos.toFixed(2)} en reposo, minimo ${minimo.toFixed(2)} en transicion`);

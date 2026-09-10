@@ -1,5 +1,6 @@
 /**
- * Piezas de interfaz que flotan alrededor de la portada activa.
+ * Piezas de interfaz que flotan alrededor de la portada activa. Hasta cinco por
+ * proyecto, cada una sacada de su propia captura.
  *
  * Son HTML real, no recortes de la imagen: se leen nítidas a cualquier tamaño,
  * escalan con la tipografía del sitio y no dependen de dónde caiga un
@@ -56,7 +57,7 @@ export function initComponents() {
     if (!project || project.id === currentId) return;
     currentId = project.id;
     const pieces = project.components || [];
-    layer.replaceChildren(...pieces.slice(0, 3).map(render));
+    layer.replaceChildren(...pieces.slice(0, 5).map(render));
   }
 
   paint();
