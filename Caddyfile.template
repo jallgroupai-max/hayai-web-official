@@ -65,13 +65,16 @@
 	# no-cache no significa "no guardes": significa "guarda pero revalida". Con
 	# ETag la revalidacion se resuelve con un 304 vacio, asi que cuesta poco y
 	# garantiza que un despliegue se ve al instante.
-	@revalidar path *.html *.css *.js *.mjs *.json
-	header @revalidar Cache-Control "no-cache"
-
 	# Imagenes y fuentes cambian poco y pesan mucho: se guardan un dia. Si se
 	# regeneran las portadas, tardan como mucho eso en verse.
 	@medios path *.jpg *.jpeg *.png *.webp *.gif *.svg *.ico *.woff2 *.woff
 	header @medios Cache-Control "public, max-age=86400"
+
+	# Todo lo demas revalida. Se define por descarte y no por extension porque
+	# una lista de extensiones se deja fuera lo que no la tiene: la raiz "/" y
+	# las rutas sin extension que try_files resuelve a .html.
+	@revalidar not path *.jpg *.jpeg *.png *.webp *.gif *.svg *.ico *.woff2 *.woff
+	header @revalidar Cache-Control "no-cache"
 
 	root * {{.StaticFileRoot}}
 
