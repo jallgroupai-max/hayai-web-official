@@ -241,10 +241,12 @@ export function initStage({ gallery, components, onOpenProject, onExplore }) {
     if (!usesGallery) return;
     const desktop = isDesktopStage();
     gallery.configure({
-      fitRatio: desktop ? 0.68 : 0.78,
-      widthRatio: desktop ? 0.34 : 0.6,
+      fitRatio: desktop ? 0.6 : 0.74,
+      widthRatio: desktop ? 0.32 : 0.58,
       offsetRatio: 0,
-      offsetYRatio: 0
+      // Se sube un poco para dejar sitio al logotipo abajo, que con una
+      // tipografia de pincel no admite quedar cortado por la mitad.
+      offsetYRatio: desktop ? 0.075 : 0
     });
     // El abanico envuelve siempre; el recorrido de scroll sigue siendo finito.
     gallery.setLoop(true);

@@ -22,15 +22,8 @@
 
 .topbar > * { pointer-events: auto; }
 
-.topbar__brand {
-  font-family: var(--grotesk);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
-
-.topbar__brand sup { font-size: 7px; vertical-align: super; font-weight: 500; }
+.topbar__brand { display: block; line-height: 0; }
+.topbar__brand img { height: 22px; width: auto; }
 
 .topbar__nav {
   display: flex;
@@ -123,24 +116,18 @@
   isolation: isolate;
 }
 
-/* Logotipo gigante al fondo. Las láminas le pasan por delante y lo recortan:
-   ese solape es lo que da profundidad al plano. */
+/* Logotipo gigante al fondo. La portada le pasa por delante y lo recorta: ese
+   solape es lo que da profundidad al plano. */
 .stage__wordmark {
   position: absolute;
   z-index: 0;
   left: 50%;
-  bottom: 0;
+  bottom: clamp(6px, 1.5vh, 22px);
   transform: translateX(-50%);
-  margin: 0;
-  font-family: var(--grotesk);
-  font-weight: 700;
-  font-size: clamp(96px, 21vw, 330px);
-  /* 0.8 deja las mayúsculas apoyadas en el borde inferior sin recortarlas. */
-  line-height: 0.8;
-  letter-spacing: -0.05em;
-  color: var(--amber);
-  white-space: nowrap;
+  width: clamp(280px, 46vw, 720px);
+  height: auto;
   user-select: none;
+  pointer-events: none;
 }
 
 .stage__canvas {
@@ -166,19 +153,26 @@
   color: var(--ink);
   padding: 12px 14px;
   min-width: 148px;
-  box-shadow: 0 18px 40px -26px rgba(23, 19, 15, 0.55);
+  /* Sombra en dos planos: una cercana que asienta la pieza y otra larga y
+     difusa que la despega del fondo. */
+  box-shadow:
+    0 4px 10px -6px rgba(23, 19, 15, 0.3),
+    0 34px 70px -24px rgba(23, 19, 15, 0.5);
   opacity: var(--settle, 1);
   transition: opacity 120ms linear;
-  animation: flotar 7s ease-in-out infinite;
+  animation: flotar 6s ease-in-out infinite;
+  will-change: transform;
 }
 
-.ui-piece:nth-child(1) { left: 24%; top: 21%; animation-duration: 7.5s; }
-.ui-piece:nth-child(2) { right: 19%; top: 45%; animation-duration: 6.2s; animation-delay: -2.4s; }
-.ui-piece:nth-child(3) { left: 29%; bottom: 19%; animation-duration: 8.1s; animation-delay: -4.1s; }
+/* Pegadas a la portada, solapándola: por eso los porcentajes caen dentro de la
+   banda que ocupa la lámina (del 34 % al 66 % del ancho). */
+.ui-piece:nth-child(1) { left: 28.5%; top: 19%; animation-duration: 6.4s; }
+.ui-piece:nth-child(2) { right: 25%; top: 46%; animation-duration: 5.2s; animation-delay: -1.9s; }
+.ui-piece:nth-child(3) { left: 31%; bottom: 17%; animation-duration: 7.1s; animation-delay: -3.4s; }
 
 @keyframes flotar {
-  0%, 100% { transform: translate3d(0, 0, 0); }
-  50% { transform: translate3d(0, -12px, 0); }
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); }
+  50% { transform: translate3d(0, -22px, 0) rotate(-0.7deg); }
 }
 
 .ui-piece__label {
@@ -784,18 +778,15 @@ html:not([data-gallery="fallback"]) .work-grid { display: none; }
 
 .site-footer__links { display: flex; flex-wrap: wrap; gap: 18px; }
 
-/* El logotipo se sale por abajo: cierra la página con el mismo gesto que la
-   abre, pero apagado. */
+/* El logotipo cierra la página con el mismo gesto que la abre, pero apagado. */
 .site-footer__word {
-  margin: clamp(24px, 4vh, 60px) 0 calc(-0.16em);
-  font-family: var(--grotesk);
-  font-weight: 700;
-  font-size: clamp(88px, 25vw, 420px);
-  line-height: 0.74;
-  letter-spacing: -0.05em;
-  text-align: center;
-  color: var(--ink-08);
+  display: block;
+  width: min(88vw, 1180px);
+  height: auto;
+  margin: clamp(24px, 4vh, 60px) auto calc(-4vw);
+  opacity: 0.1;
   user-select: none;
+  pointer-events: none;
 }
 
 /* ── Visor de casos ───────────────────────────────────────────────────────── */
