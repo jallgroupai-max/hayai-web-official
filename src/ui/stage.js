@@ -33,8 +33,12 @@ import {
 } from '../motion.js';
 import { GalleryController } from '../gallery/controller.js';
 
-/** Alturas de viewport que dura cada tramo del recorrido. */
-const TRAVEL = 1;
+/**
+ * Alturas de viewport que dura cada tramo del recorrido. Con 1 hacia falta
+ * bajar una pantalla entera por proyecto y se hacia largo; con 0,38 bastan un
+ * par de muescas de rueda para pasar al siguiente.
+ */
+const TRAVEL = 0.38;
 const HOVER_THROTTLE = 80;
 
 /**
@@ -43,9 +47,13 @@ const HOVER_THROTTLE = 80;
  * recorrido se queda parado en sitios como 0,694: ni un proyecto ni el
  * siguiente, con los componentes flotantes a medio desvanecer para siempre.
  * Con la espera, cada proyecto es una pantalla: se sostiene, y el cambio ocurre
- * de golpe en el resto del tramo.
+ * en el resto del tramo.
+ *
+ * Se mantiene baja a propósito: el reposo sirve para que el proyecto se lea,
+ * no para obligar a seguir bajando. Con el tramo ya corto, una espera larga
+ * haría que el scroll pareciera no responder.
  */
-const DWELL = 0.42;
+const DWELL = 0.26;
 
 /**
  * Cuánto de asentado está el proyecto: 1 quieto en su sitio, 0 en mitad del
